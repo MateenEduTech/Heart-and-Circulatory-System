@@ -1,0 +1,1365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Human Heart &amp; Blood Circulation – A 3D Journey</title>
+<meta name="description" content="Interactive 3D heart and blood circulation for Classes 5–6. Developed by Mateen Yousuf, Teacher.">
+<meta name="theme-color" content="#050d1f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Heart">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{
+  --navy:#050d1f; --navy2:#0b2a52; --panel:rgba(5,16,38,.94); --line:rgba(120,200,255,.28);
+  --sky:#5cc8ff; --teal:#19c3d6; --sun:#35d4ff; --leaf:#46e08f; --ink:#ffffff; --muted:#a9c8e6; --warn:#ff8a7a; --red:#ff4d5e; --blue:#3b82ff;
+  --r:16px; --safe-b:env(safe-area-inset-bottom,0px);
+  --font:"Avenir Next","Segoe UI","Trebuchet MS",Roboto,system-ui,-apple-system,sans-serif;
+  --navh:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#050d1f;color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45}
+body.no3d{background:radial-gradient(circle at 50% 40%,#0b3a66,#050d1f 70%)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;transform:translate(-50%,-120%);pointer-events:auto;white-space:nowrap;background:rgba(5,16,38,.85);color:#fff;border:1px solid rgba(120,200,255,.5);
+  border-radius:99px;padding:3px 11px;font-size:13px;font-weight:700;letter-spacing:.2px;cursor:pointer;will-change:transform;display:none}
+.lbl.you{background:var(--sun);color:#04203a;border-color:#fff;font-size:14px;z-index:3}
+.lbl.hs{background:#fff;color:#04203a;border:2px solid var(--sun);width:30px;height:30px;padding:0;border-radius:50%;text-align:center;line-height:26px;font-size:15px;transform:translate(-50%,-50%)}
+.lbl.hs::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--sun);animation:ping 1.8s infinite}
+@keyframes ping{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 40%,#0b3a66,#050d1f 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .6s}
+#loader .drop{font-size:64px;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px)}}
+#loader.hide{opacity:0;pointer-events:none}
+
+/* ---------- title ---------- */
+#title{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:clamp(12px,4.5vh,48px) 18px calc(24px + var(--safe-b));
+  background:radial-gradient(ellipse at 50% 42%,rgba(2,8,22,.55) 0%,rgba(2,8,22,.3) 45%,rgba(2,8,22,.0) 75%),linear-gradient(rgba(2,8,22,.45),rgba(2,8,22,0) 30%,rgba(2,8,22,0) 62%,rgba(2,8,22,.7));
+  transition:opacity .9s,transform .9s}
+#title.gone{opacity:0;pointer-events:none;transform:scale(1.06)}
+#title h1{margin:0;font-size:clamp(30px,6.4vw,84px);line-height:1;font-weight:900;letter-spacing:2px;text-transform:uppercase;
+  background:linear-gradient(#ffffff 25%,#8fe9ff 70%,#35a6ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 rgba(0,40,110,.65)) drop-shadow(0 0 28px rgba(40,190,255,.55))}
+#title h2{margin:.5em 0 0;font-size:clamp(20px,3.6vw,40px);font-weight:700;color:#8fe9ff;text-shadow:0 2px 10px rgba(0,10,30,.9)}
+#title p.sup{max-width:720px;margin:.9em auto 0;font-size:clamp(16px,2.2vw,22px);color:#fff;text-shadow:0 2px 8px rgba(0,20,50,.95)}
+#title .cred{margin-top:1.1em;font-size:clamp(17px,2.4vw,24px);font-weight:800;letter-spacing:.6px;color:#fff;background:rgba(5,16,38,.7);border:1px solid rgba(120,200,255,.5);padding:8px 22px;border-radius:99px}
+#title .cred small{display:block;font-weight:600;font-size:.72em;color:#8fe9ff;letter-spacing:2px;text-transform:uppercase}
+.start{margin-top:1.3em;font-size:clamp(18px,2.4vw,26px);font-weight:900;letter-spacing:1.4px;padding:16px 38px;border-radius:99px;border:3px solid #fff;
+  background:linear-gradient(#7cecff,#22a8f0);color:#04203a;box-shadow:0 8px 0 #0a6aa8,0 0 34px rgba(40,200,255,.5);animation:pulse 2.2s ease-in-out infinite}
+.start:active{transform:translateY(4px);box-shadow:0 4px 0 #0a6aa8}
+@keyframes pulse{50%{transform:scale(1.045)}}
+#title .tag{margin-top:1.2em;font-size:15px;color:#d6efff;font-style:italic;text-shadow:0 2px 8px rgba(0,20,50,.95)}
+
+/* ---------- top bar ---------- */
+#top{position:fixed;left:0;right:0;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px;pointer-events:none}
+#top>*{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:99px;font-weight:900;letter-spacing:.4px;font-size:16px}
+.brand span.i{font-size:22px}
+.tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.tb{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;font-size:19px;padding:0}
+.tb:hover{background:var(--navy2)} .tb.on{background:var(--sun);color:#04203a}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:36px;border-radius:99px;background:var(--panel);border:1px solid var(--line);font-size:13px;font-weight:700}
+.chip i{width:9px;height:9px;border-radius:50%;background:#5fd08a;display:inline-block}
+.chip.off i{background:var(--warn)}
+#installBtn{display:none;height:44px;padding:0 16px;border-radius:99px;border:2px solid #fff;background:var(--sun);color:#04203a;font-weight:900}
+#backBtn{display:none;height:44px;padding:0 16px;border-radius:99px;border:2px solid #fff;background:var(--sun);color:#04203a;font-weight:900;margin-left:8px}
+#settings{position:fixed;right:10px;top:calc(62px + env(safe-area-inset-top,0px));z-index:25;width:min(300px,92vw);padding:14px;display:none}
+#settings.open{display:block}
+#settings label{display:block;font-weight:700;margin:10px 0 4px;font-size:15px}
+#settings input[type=range]{width:100%}
+.seg{display:flex;gap:6px}.seg button{flex:1;padding:9px 6px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.08);font-weight:700}
+.seg button.on{background:var(--sun);color:#04203a;border-color:#fff}
+
+/* ---------- info panel ---------- */
+#panel{position:fixed;right:12px;top:calc(66px + env(safe-area-inset-top,0px));z-index:15;width:min(410px,40vw);max-height:calc(100vh - 66px - var(--navh) - 20px - var(--safe-b) - var(--stageh,0px));overflow:auto;padding:16px 18px 18px;display:none;scrollbar-width:thin}
+#panel.show{display:block}
+#panel h3{margin:0 0 4px;font-size:22px;line-height:1.2}
+#panel .kick{font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--sun);margin-bottom:4px}
+#panel p{margin:.5em 0}
+#panel ul{margin:.4em 0;padding-left:1.15em}#panel li{margin:.25em 0}
+.box{margin:.7em 0;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.09);border-left:4px solid var(--teal);font-size:15.5px}
+.box.an{border-color:var(--sun)} .box.nt{border-color:var(--warn);font-size:14.5px;color:#ffe3d4} .box.fact{border-color:var(--leaf)}
+.box>b:first-child{color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:8px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.1);font-weight:800;font-size:15px}
+.btn:hover{background:rgba(255,255,255,.2)}
+.btn.pri{background:linear-gradient(#7cecff,#22a8f0);color:#04203a;border-color:#fff}
+.btn.on{background:var(--sun);color:#04203a;border-color:#fff}
+.btn.sm{min-height:38px;padding:5px 12px;font-size:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:.6em 0}
+.ctl{margin:.7em 0}.ctl label{display:flex;justify-content:space-between;font-weight:700;font-size:15px;margin-bottom:3px}
+input[type=range]{width:100%;accent-color:var(--sun);height:28px}
+.bar{height:18px;border-radius:9px;background:rgba(255,255,255,.14);overflow:hidden;margin:3px 0 8px}
+.bar>i{display:block;height:100%;width:0;border-radius:9px;transition:width .25s}
+.bl{display:flex;justify-content:space-between;font-size:14px;font-weight:700}
+.sheet-handle{display:none}
+
+/* ---------- stage bar ---------- */
+#stagebar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--navh) + 12px + var(--safe-b));z-index:16;width:min(920px,calc(100vw - 20px));padding:10px 12px;display:none}
+#stagebar.show{display:block}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.sc{flex:0 0 auto;min-width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.08);font-weight:800;font-size:15px;padding:0 10px;display:flex;align-items:center;gap:6px}
+.sc.on{background:var(--sun);color:#04203a;border-color:#fff}
+.sc.done{background:rgba(95,208,138,.28)}
+.sc .n{font-size:12px;opacity:.85}
+.sctl{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:2px}
+.prog{height:6px;border-radius:3px;background:rgba(255,255,255,.18);margin:2px 0 8px;overflow:hidden}.prog>i{display:block;height:100%;width:0;background:var(--sun)}
+
+/* ---------- nav ---------- */
+#nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:6px;justify-content:flex-start;padding:6px 8px calc(6px + var(--safe-b));background:linear-gradient(rgba(5,16,38,0),rgba(5,16,38,.96) 35%);overflow-x:auto;scrollbar-width:none}
+#nav::-webkit-scrollbar{display:none}
+.nb:first-child{margin-left:auto}.nb:last-child{margin-right:auto}
+.pmin{display:none;position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.12);font-size:16px;padding:0}
+#panel.min>*:not(.pmin):not(.kick):not(h3){display:none}
+#panel.min{max-height:none!important;padding-bottom:10px}
+.nb{flex:0 0 auto;min-width:72px;height:54px;border-radius:14px;border:1px solid var(--line);background:rgba(5,16,38,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;gap:0;padding:2px 8px;line-height:1.15}
+.nb span.i{font-size:20px}
+.nb.on{background:var(--sun);color:#04203a;border-color:#fff}
+.nb:hover{background:var(--navy2)}.nb.on:hover{background:var(--sun)}
+
+/* ---------- modal ---------- */
+#modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(2,18,36,.72);padding:10px}
+#modal.open{display:flex}
+.sheet{width:min(1020px,100%);max-height:calc(100vh - 20px);display:flex;flex-direction:column;background:linear-gradient(#0a2a50,#050d1f);border:1px solid var(--line);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.55);overflow:hidden}
+.sheet header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.sheet header h2{margin:0;font-size:22px;flex:1}
+.sheet .body{padding:14px 18px 20px;overflow:auto;flex:1 1 auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.08);font-weight:800;min-height:42px}
+.tabs button.on{background:var(--sun);color:#04203a;border-color:#fff}
+.cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+canvas.lab{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);background:#0c4a78;display:block;touch-action:manipulation}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.card{padding:14px;border-radius:14px;background:rgba(255,255,255,.09);border:1px solid var(--line);text-align:left}
+.card h4{margin:0 0 4px;font-size:18px}
+.card.click{cursor:pointer}.card.click:hover{background:rgba(255,255,255,.17)}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:rgba(255,255,255,.08);font-weight:700;font-size:16.5px;min-height:48px}
+.opt:hover{background:rgba(255,255,255,.17)}
+.opt.ok{border-color:var(--leaf);background:rgba(95,208,138,.28)}
+.opt.no{border-color:var(--warn);background:rgba(255,157,108,.2)}
+.opt[disabled]{cursor:default;opacity:.95}
+.fb{margin:10px 0;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.1);border-left:5px solid var(--teal);font-size:16px}
+.fb.ok{border-color:var(--leaf)}.fb.no{border-color:var(--warn)}
+.big{font-size:44px;font-weight:900}
+.pill{display:inline-block;padding:3px 12px;border-radius:99px;background:rgba(255,255,255,.14);font-weight:800;font-size:14px}
+.qa{margin-top:8px}.qa summary{cursor:pointer;font-weight:800;color:var(--sun);min-height:32px}
+.lh{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seq{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.seq .tag{padding:6px 12px;border-radius:99px;background:var(--leaf);color:#04203a;font-weight:900}
+
+#toast{position:fixed;left:50%;bottom:calc(var(--navh) + 20px + var(--safe-b));transform:translate(-50%,30px);z-index:70;max-width:min(560px,92vw);padding:12px 18px;border-radius:14px;background:#fff;color:#04203a;font-weight:700;opacity:0;pointer-events:none;transition:.3s;display:flex;gap:12px;align-items:center}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast button{border:0;background:var(--navy);color:#fff;padding:7px 14px;border-radius:99px;font-weight:800}
+
+/* presentation mode */
+body.present #nav,body.present .tools .hide-p,body.present #top .brand,body.present #backBtn{display:none!important}
+body.present #panel{font-size:1.18em;width:min(520px,44vw)}
+body.present #stagebar .sctl .btn.opt-p{display:none}
+#exitP{display:none;position:fixed;left:10px;top:10px;z-index:60}
+body.present #exitP{display:inline-flex}
+
+body.is-title #nav,body.is-title #panel,body.is-title #stagebar{visibility:hidden}
+.sr{position:absolute;left:-9999px}
+#nowebgl{display:none}
+
+/* ---------- small screens ---------- */
+@media (max-width:860px){
+  :root{--navh:60px}
+  .tb.hide-m{display:none}.tools{flex-wrap:nowrap;gap:4px}.chip{padding:0 10px}.chip:not(.off) span{display:none}
+  #backBtn{padding:0 12px;white-space:nowrap;font-size:14px;margin-left:0}body.has-back .brand{display:none}
+  .pmin{display:grid;place-items:center}#panel h3{padding-right:40px}
+  .sctl .btn{padding:4px 10px;font-size:13px;min-height:38px}
+  #panel{left:8px;right:8px;width:auto;top:auto;bottom:calc(var(--navh) + 6px + var(--safe-b) + var(--stageh,0px));max-height:min(42vh,calc(100vh - 220px - var(--stageh,0px)));padding:12px 14px 14px}
+  #panel h3{font-size:19px}
+  .brand b{display:none}.brand{padding:4px 6px}
+  .tb{width:38px;height:38px;font-size:16px}
+  .tools{gap:4px}
+  .cols{grid-template-columns:1fr}
+  .sheet header h2{font-size:18px}
+  .nb{min-width:64px;height:50px;font-size:11.5px}
+  #stagebar{padding:8px 8px}
+  body.present #panel{width:auto}
+}
+@media (max-height:520px) and (orientation:landscape){
+  #panel{max-height:calc(100vh - 140px - var(--stageh,0px));width:min(380px,44vw);left:auto;right:8px;top:56px;bottom:auto}
+  #title h1{font-size:clamp(34px,9vh,80px)}
+  #title p.sup{display:none}
+  .start{margin-top:.6em;padding:10px 26px}
+}
+@media (prefers-reduced-motion:reduce){.start,.lbl.hs::after,#loader .drop{animation:none}}
+noscript{position:fixed;inset:0;z-index:99;background:#06304f;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:20px}
+
+.rt{width:100%;border-collapse:collapse;font-size:14px;margin:.5em 0}.rt th,.rt td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.14);text-align:left}.rt tr[data-act]{cursor:pointer}.rt tr.cur{background:rgba(53,212,255,.2)}
+canvas.lab{width:100%;max-width:640px;border-radius:12px;border:1px solid var(--line);display:block;margin:6px auto}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}@media(max-width:640px){.cols3{grid-template-columns:1fr}}
+.nb{max-width:104px;text-align:center}
+input[type=range]{accent-color:#35d4ff}
+@media (min-width:900px) and (orientation:landscape){#title{align-items:flex-start;text-align:left;padding-left:5vw;max-width:56vw}#title h1{font-size:clamp(30px,4.6vw,76px)}#title p.sup{margin-left:0}}
+</style>
+</head>
+<body>
+<noscript>This app needs JavaScript. Please enable JavaScript in your browser.</noscript>
+<canvas id="gl" tabindex="0" aria-label="3D human heart and circulatory system. Drag to rotate, scroll or pinch to zoom, tap parts to learn about them."></canvas>
+<div id="labels" aria-hidden="false"></div>
+
+<div id="loader" role="status"><div class="drop">❤️</div><b style="font-size:20px">Loading The Human Heart &amp; Blood Circulation…</b><span id="loadmsg" style="color:#a9c8e6">Preparing the 3D heart</span></div>
+
+<section id="title" aria-label="Title page">
+  <h1>The Human Heart<br>&amp; Blood Circulation</h1>
+  <h2>A 3D Journey Through the Circulatory System</h2>
+  <p class="sup">Explore the beating heart, follow blood through its chambers, and discover how oxygen reaches every part of your body.</p>
+  <div class="cred"><small>Developed by</small>Mateen Yousuf — Teacher</div>
+  <button class="start" id="startBtn">START EXPLORATION ▶</button>
+  <div class="tag">Follow one drop of blood around the body.</div>
+</section>
+
+<div id="top">
+  <div style="display:flex;align-items:center">
+    <div class="brand glass"><span class="i">❤️</span><b>The Human Heart</b></div>
+    <button id="backBtn" aria-label="Return to the home page">← Home</button>
+  </div>
+  <div class="tools">
+    <span class="chip" id="netChip" role="status" aria-live="polite"><i></i><span>Online</span></span>
+    <button id="installBtn" aria-label="Install this app">⬇ Install App</button>
+    <button class="tb" id="pauseBtn" aria-label="Pause animation" title="Pause / resume (Space)">⏸</button>
+    <button class="tb" id="resetCam" aria-label="Reset camera" title="Reset camera">⌖</button>
+    <button class="tb hide-p hide-m" id="zoomIn" aria-label="Zoom in" title="Zoom in">＋</button>
+    <button class="tb hide-p hide-m" id="zoomOut" aria-label="Zoom out" title="Zoom out">－</button>
+    <button class="tb" id="lblBtn" aria-label="Show or hide labels" title="Labels">🏷</button>
+    <button class="tb" id="setBtn" aria-label="Settings" title="Settings">⚙</button>
+    <button class="tb" id="presBtn" aria-label="Presentation mode" title="Presentation mode">📽</button>
+  </div>
+</div>
+<button class="btn pri" id="exitP" aria-label="Exit presentation mode">✕ Exit presentation</button>
+
+<div id="settings" class="glass" role="dialog" aria-label="Settings">
+  <label for="spd">Animation speed: <span id="spdv">1×</span></label>
+  <input type="range" id="spd" min="0.4" max="2.4" step="0.1" value="1">
+  <label>Graphics</label>
+  <div class="seg" id="gfxSeg"><button data-g="high">High</button><button data-g="low">Low (faster)</button></div>
+  <p style="font-size:13px;color:var(--muted);margin:10px 0 0">Low graphics uses fewer particles and a lower resolution. Good for older phones.</p>
+</div>
+
+<aside id="panel" class="glass" aria-live="polite"></aside>
+<div id="stagebar" class="glass"></div>
+<nav id="nav" aria-label="Main navigation"></nav>
+<div id="modal" role="dialog" aria-modal="true"></div>
+<div id="toast" role="status"></div>
+
+<script src="three.min.js"></script>
+<script>
+
+/* =====================================================================
+   THE HUMAN HEART & BLOOD CIRCULATION — Developed by Mateen Yousuf, Teacher
+   ===================================================================== */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const wrapPi = a => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
+function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const rnd = mulberry(4242);
+const shuffle = (arr, r) => { const a = arr.slice(); const R = r || Math.random; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+/* safe storage (may throw in private windows) */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('hc_' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('hc_' + k, JSON.stringify(v)); } catch (e) { } }
+};
+
+/* shared state */
+const W = { mode: 'title', speed: 1, paused: false, labels: true, gfx: 'high', present: false, modalOpen: false };
+const NO3D = { v: false };
+
+function toast(msg, btn, cb, ms) {
+  const t = $('#toast'); t.innerHTML = '<span></span>';
+  t.firstChild.textContent = msg;
+  if (btn) { const b = document.createElement('button'); b.textContent = btn; b.onclick = () => { t.classList.remove('show'); cb && cb(); }; t.appendChild(b); }
+  t.classList.add('show'); clearTimeout(toast._t);
+  if (ms !== 0) toast._t = setTimeout(() => t.classList.remove('show'), ms || 3200);
+}
+
+/* =====================================================================
+   ENGINE: renderer, camera, labels with leader lines, picking, helpers
+   ===================================================================== */
+let renderer, scene, camera, clock, T = 0, bgPts;
+const RED = 0xff4d5e, BLUE = 0x3b82ff, CYAN = 0x35d4ff;
+const CLIP = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0.55);
+const PICK = [];            /* meshes the student can tap */
+const M = {};
+
+function glowTex(c1, c2) {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, c1 || 'rgba(255,255,255,1)'); gr.addColorStop(.35, c2 || 'rgba(120,220,255,.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c);
+}
+const GLOW = {};
+function glowMat(col) { if (!GLOW[col]) { const c = new THREE.Color(col); const a = `rgba(${c.r * 255 | 0},${c.g * 255 | 0},${c.b * 255 | 0},`; GLOW[col] = new THREE.SpriteMaterial({ map: glowTex(a + '1)', a + '.45)'), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }); } return GLOW[col]; }
+function textSprite(txt, col, scale, bg) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 96; const g = c.getContext('2d');
+  if (bg) { g.fillStyle = bg; g.beginPath(); g.roundRect ? g.roundRect(6, 6, 500, 84, 30) : g.rect(6, 6, 500, 84); g.fill(); }
+  g.fillStyle = col || '#fff'; g.font = '800 46px system-ui,Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 256, 52);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false })); s.scale.set(scale * 5.33, scale, 1); s.renderOrder = 12; return s;
+}
+function initMats() {
+  const S = (c, m, r, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, metalness: m, roughness: r }, o || {}));
+  M.muscle = c => S(c || 0xd9566a, .05, .55); M.steel = S(0xdfe7f1, .4, .35); M.valve = S(0xffe9b8, .1, .5, { side: THREE.DoubleSide, emissive: 0x332200 });
+  M.dark = S(0x1a2540, .3, .6); M.cyan = new THREE.MeshBasicMaterial({ color: CYAN });
+}
+const RIM_VS = 'varying vec3 vN; varying vec3 vV; void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); vN=normalize(normalMatrix*normal); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }';
+const RIM_FS = 'precision highp float; varying vec3 vN; varying vec3 vV; uniform vec3 uC; uniform float uA; void main(){ float f=1.-abs(dot(normalize(vN),normalize(vV))); float a=(pow(f,2.2)*.75+.035)*uA; gl_FragColor=vec4(uC,a); }';
+function rimMat(col, a) { return new THREE.ShaderMaterial({ vertexShader: RIM_VS, fragmentShader: RIM_FS, transparent: true, depthWrite: false, uniforms: { uC: { value: new THREE.Color(col) }, uA: { value: a || 1 } } }); }
+
+/* ---------- flow arrows (cones travelling along a curve) ---------- */
+class Flow {
+  constructor(curve, n, col, size, speed) {
+    this.c = curve; this.n = n; this.speed = speed || .12; this.t = Math.random(); this.vis = true;
+    const g = new THREE.ConeGeometry(.2 * (size || 1), .6 * (size || 1), 8); g.rotateX(Math.PI / 2);   /* tip along +z */
+    this.m = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .95, depthTest: false }), n); this.m.renderOrder = 9; this.m.frustumCulled = false;
+    this.d = new THREE.Object3D(); this.up = new THREE.Vector3(0, 1, 0); this.tmp = new THREE.Vector3(); this.tmp2 = new THREE.Vector3();
+  }
+  update(dt) {
+    this.t = (this.t + dt * this.speed) % 1; const d = this.d;
+    for (let i = 0; i < this.n; i++) { const u = (this.t + i / this.n) % 1; this.c.getPointAt(u, this.tmp); this.c.getTangentAt(u, this.tmp2); d.position.copy(this.tmp); d.lookAt(this.tmp.clone().add(this.tmp2)); d.updateMatrix(); this.m.setMatrixAt(i, d.matrix); }
+    this.m.instanceMatrix.needsUpdate = true;
+  }
+  setColor(c) { this.m.material.color.set(c); }
+}
+
+/* ---------- camera ---------- */
+const CAM = { t: null, d: 30, yaw: 0, pitch: .3, g: null, f: 1, auto: false, preset: null, follow: null, min: 4, max: 120 };
+function camGo(p, instant) {
+  CAM.g.t.set(p.t[0], p.t[1], p.t[2]); CAM.g.d = p.d; CAM.g.yaw = p.yaw; CAM.g.pitch = p.pitch; CAM.preset = p; CAM.follow = null;
+  if (instant) { CAM.t.copy(CAM.g.t); CAM.d = p.d; CAM.yaw = p.yaw; CAM.pitch = p.pitch; }
+}
+function camUpdate(dt) {
+  if (CAM.follow) CAM.g.t.copy(CAM.follow());
+  if (CAM.auto) { CAM.g.yaw = .5 * Math.sin(performance.now() / 1000 * .14); CAM.g.pitch = .15 + .06 * Math.sin(performance.now() / 1000 * .1); }
+  const k = 1 - Math.exp(-dt * 3.2);
+  CAM.t.lerp(CAM.g.t, k); CAM.d += (CAM.g.d - CAM.d) * k; CAM.yaw += (CAM.g.yaw - CAM.yaw) * k; CAM.pitch += (CAM.g.pitch - CAM.pitch) * k;
+  const cp = Math.cos(CAM.pitch), D = CAM.d * CAM.f;
+  camera.position.set(CAM.t.x + D * Math.sin(CAM.yaw) * cp, CAM.t.y + D * Math.sin(CAM.pitch), CAM.t.z + D * Math.cos(CAM.yaw) * cp); camera.lookAt(CAM.t);
+}
+const _ray = new THREE.Raycaster(), _v2 = new THREE.Vector2();
+function pickAt(cx, cy) {
+  _v2.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); _ray.setFromCamera(_v2, camera);
+  const vis = PICK.filter(m => { let o = m; while (o) { if (!o.visible) return false; o = o.parent; } return true; });
+  const hit = _ray.intersectObjects(vis, false); return hit.length ? hit[0].object : null;
+}
+function initCamera() {
+  const cv = $('#gl'), ptrs = new Map(); let last = 0, moved = 0, downAt = 0;
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; downAt = performance.now(); CAM.auto = false; if (ptrs.size === 2) { const a = [...ptrs.values()]; last = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); } });
+  cv.addEventListener('pointermove', e => {
+    const p = ptrs.get(e.pointerId); if (!p) return; const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+    if (ptrs.size === 1) { CAM.follow = CAM.follow && Stage.keepFollow ? CAM.follow : null; CAM.g.yaw -= dx * .0065; CAM.g.pitch = clamp(CAM.g.pitch + dy * .0055, -.6, 1.5); CAM.yaw = CAM.g.yaw; CAM.pitch = CAM.g.pitch; }
+    else if (ptrs.size === 2) { const a = [...ptrs.values()], d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); if (last) { CAM.g.d = clamp(CAM.g.d * last / d, CAM.min, CAM.max); CAM.d = CAM.g.d; } last = d; }
+  });
+  const up = e => { ptrs.delete(e.pointerId); last = 0; if (ptrs.size === 0 && moved < 8 && performance.now() - downAt < 450) onTap(e.clientX, e.clientY); };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); last = 0; });
+  cv.addEventListener('wheel', e => { e.preventDefault(); CAM.g.d = clamp(CAM.g.d * Math.exp(e.deltaY * .0012), CAM.min, CAM.max); }, { passive: false });
+  cv.addEventListener('keydown', e => {
+    const k = e.key; let h = true;
+    if (k === 'ArrowLeft') CAM.g.yaw += .12; else if (k === 'ArrowRight') CAM.g.yaw -= .12; else if (k === 'ArrowUp') CAM.g.pitch = clamp(CAM.g.pitch - .08, -.6, 1.5); else if (k === 'ArrowDown') CAM.g.pitch = clamp(CAM.g.pitch + .08, -.6, 1.5);
+    else if (k === '+' || k === '=') CAM.g.d = clamp(CAM.g.d * .85, CAM.min, CAM.max); else if (k === '-') CAM.g.d = clamp(CAM.g.d * 1.18, CAM.min, CAM.max); else h = false;
+    if (h) { e.preventDefault(); CAM.auto = false; }
+  });
+}
+function zoomBy(f) { CAM.g.d = clamp(CAM.g.d * f, CAM.min, CAM.max); CAM.auto = false; }
+function onTap(x, y) { const m = pickAt(x, y); if (Stage.cur && Stage.cur.tap) Stage.cur.tap(m ? m.userData.pid : null, m); }
+
+/* ---------- labels with 3D leader lines ---------- */
+const LBL = { list: [], byId: {} };
+let leadG;
+function addLabel(id, text, anchor, off, modes, opt) {
+  opt = opt || {}; const el = document.createElement('button'); el.className = 'lbl' + (opt.cls ? ' ' + opt.cls : ''); el.textContent = text; el.setAttribute('aria-label', opt.aria || text); el.tabIndex = -1;
+  el.addEventListener('click', e => { e.stopPropagation(); if (opt.click) opt.click(); else if (Stage.cur && Stage.cur.tap && opt.pid) Stage.cur.tap(opt.pid); });
+  $('#labels').appendChild(el);
+  const a = new THREE.Vector3(...anchor), p = a.clone().add(new THREE.Vector3(...(off || [0, 0, 0])));
+  let line = null; if (off) { const g = new THREE.BufferGeometry().setFromPoints([a, p]); line = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xbfeaff, transparent: true, opacity: .7, depthTest: false })); line.renderOrder = 8; leadG.add(line); }
+  const L = { id, el, pos: p, line, modes, v: new THREE.Vector3(), on: true, always: !!opt.always, key: opt.key || null }; LBL.list.push(L); LBL.byId[id] = L; return L;
+}
+function updateLabels() {
+  const g = W.mode, w = innerWidth, h = innerHeight;
+  for (const L of LBL.list) {
+    const show = L.on && L.modes.includes(g) && (W.labels || L.always) && (!L.key || (Stage.cur && Stage.cur.labelOn ? Stage.cur.labelOn(L.key) : true));
+    if (L.line) L.line.visible = !!show;
+    if (!show) { if (L.shown) { L.el.style.display = 'none'; L.shown = false; } continue; }
+    L.v.copy(typeof L.pos === 'function' ? L.pos() : L.pos).project(camera);
+    if (L.v.z > 1 || Math.abs(L.v.x) > 1.1 || Math.abs(L.v.y) > 1.1) { if (L.shown) { L.el.style.display = 'none'; L.shown = false; } if (L.line) L.line.visible = false; continue; }
+    if (!L.shown) { L.el.style.display = 'block'; L.shown = true; }
+    L.el.style.transform = `translate(${((L.v.x * .5 + .5) * w).toFixed(1)}px,${((-L.v.y * .5 + .5) * h).toFixed(1)}px) translate(-50%,-50%)`;
+  }
+}
+
+/* ---------- renderer / scene ---------- */
+function resize() {
+  if (!renderer) return;
+  const w = innerWidth, h = innerHeight, pr = W.gfx === 'low' ? Math.min(devicePixelRatio || 1, 1.15) : Math.min(devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(pr); renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = 42; CAM.f = clamp(1.3 / (w / h), 1, 2.3); camera.updateProjectionMatrix(); applyViewOffset();
+}
+function applyViewOffset() {
+  if (!camera) return; const w = innerWidth, h = innerHeight, P = typeof UI !== 'undefined' && UI.panel, show = P && P.classList.contains('show') && !W.present;
+  let sx = 0, sy = 0;
+  if (show) { const r = P.getBoundingClientRect(); if (r.left > w * .35) sx = (w - r.left) / 2; else sy = clamp((h - r.top) * .5, 0, h * .36); }
+  if (W.mode === 'title') { if (w / h > 1.25 && w >= 900) sx = -w * .24; else sy = -h * .16; }
+  if (sx || sy) camera.setViewOffset(w, h, sx, sy, w, h); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+}
+function initWorld() {
+  const cv = $('#gl');
+  renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' }); renderer.setClearColor(0x050d1f, 1); renderer.localClippingEnabled = true;
+  scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x050d1f, .006);
+  camera = new THREE.PerspectiveCamera(42, 1, .1, 500); clock = new THREE.Clock(); CAM.t = new THREE.Vector3(); CAM.g = { t: new THREE.Vector3() };
+  initMats();
+  scene.add(new THREE.HemisphereLight(0xcfe6ff, 0x3a2040, .75)); scene.add(new THREE.AmbientLight(0xa0b4e0, .5));
+  const dl = new THREE.DirectionalLight(0xffffff, .95); dl.position.set(8, 14, 16); scene.add(dl); const pl = new THREE.PointLight(0x35b8ff, .8, 120); pl.position.set(-14, 8, -10); scene.add(pl); const pl2 = new THREE.PointLight(0xff4d5e, .5, 100); pl2.position.set(14, -6, 12); scene.add(pl2);
+  leadG = new THREE.Group(); scene.add(leadG);
+  const N = 300, bp = new Float32Array(N * 3); for (let i = 0; i < N; i++) { const r = 45 + rnd() * 70, a = rnd() * 6.283, y = (rnd() - .5) * 90; bp[i * 3] = Math.cos(a) * r; bp[i * 3 + 1] = y; bp[i * 3 + 2] = Math.sin(a) * r; }
+  const bgG = new THREE.BufferGeometry(); bgG.setAttribute('position', new THREE.BufferAttribute(bp, 3)); bgPts = new THREE.Points(bgG, new THREE.PointsMaterial({ size: 1.4, map: glowTex('rgba(160,230,255,1)', 'rgba(60,160,255,.4)'), transparent: true, opacity: .5, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(bgPts);
+  initCamera(); window.addEventListener('resize', resize); resize();
+}
+
+/* =====================================================================
+   HEART MODEL, VESSEL NETWORK, BODY, BLOOD PARTICLES
+   ===================================================================== */
+const PARTS = {
+  ra: { n: 'Right atrium', k: 'chamber', ox: 'low', t: 'The right atrium receives <b>oxygen-poor</b> blood coming back from the body through the two big veins (the superior and inferior venae cavae). It then sends the blood through the tricuspid valve into the right ventricle.' },
+  rv: { n: 'Right ventricle', k: 'chamber', ox: 'low', t: 'The right ventricle pumps <b>oxygen-poor</b> blood through the pulmonary valve into the pulmonary arteries, towards the <b>lungs</b>. Its wall is thinner than the left ventricle’s because the lungs are close by.' },
+  la: { n: 'Left atrium', k: 'chamber', ox: 'high', t: 'The left atrium receives <b>oxygen-rich</b> blood from the lungs through the pulmonary veins. It then passes the blood through the mitral valve into the left ventricle.' },
+  lv: { n: 'Left ventricle', k: 'chamber', ox: 'high', t: 'The left ventricle pumps <b>oxygen-rich</b> blood through the aortic valve into the aorta and on to the whole body. It has the <b>thickest muscular wall</b> because it must push blood a long way around the body.' },
+  tri: { n: 'Tricuspid valve', k: 'valve', ox: 'low', t: 'The tricuspid valve lies between the <b>right atrium</b> and the <b>right ventricle</b>. It has three flaps. It opens to let blood into the ventricle and closes to help stop blood flowing backwards.' },
+  pulv: { n: 'Pulmonary valve', k: 'valve', ox: 'low', t: 'The pulmonary valve lies between the <b>right ventricle</b> and the <b>pulmonary artery</b>. It opens when the ventricle squeezes and closes afterwards so blood does not fall back into the heart.' },
+  mit: { n: 'Mitral valve', k: 'valve', ox: 'high', t: 'The mitral valve lies between the <b>left atrium</b> and the <b>left ventricle</b>. It has two flaps. It lets blood flow down into the ventricle and helps stop it flowing back.' },
+  aov: { n: 'Aortic valve', k: 'valve', ox: 'high', t: 'The aortic valve lies between the <b>left ventricle</b> and the <b>aorta</b>. It opens when the ventricle squeezes and closes afterwards, keeping the blood moving one way.' },
+  svc: { n: 'Superior vena cava', k: 'vessel', ox: 'low', t: 'A large vein that carries <b>oxygen-poor</b> blood from the head, neck and arms down to the right atrium. “Superior” means above the heart.' },
+  ivc: { n: 'Inferior vena cava', k: 'vessel', ox: 'low', t: 'The largest vein. It carries <b>oxygen-poor</b> blood from the lower body (trunk and legs) up to the right atrium. “Inferior” means below the heart.' },
+  pa: { n: 'Pulmonary arteries', k: 'vessel', ox: 'low', t: 'They carry blood <b>away</b> from the right ventricle to the lungs, so they are arteries – even though this blood has relatively <b>low oxygen</b> content. They split into a left and a right branch.' },
+  pv: { n: 'Pulmonary veins', k: 'vessel', ox: 'high', t: 'They carry blood from the lungs <b>towards</b> the left atrium, so they are veins – and this blood has relatively <b>high oxygen</b> content. A good example that veins are not always “blue blood”!' },
+  aorta: { n: 'Aorta', k: 'vessel', ox: 'high', t: 'The body’s biggest artery. It carries <b>oxygen-rich</b> blood away from the left ventricle, arches over the heart and branches to the head, arms, organs and legs.' },
+  lungs: { n: 'Lungs', k: 'organ', ox: 'both', t: 'In the lungs, blood passes through tiny capillaries next to the air sacs. <b>Oxygen enters</b> the blood and <b>carbon dioxide leaves</b> it to be breathed out.' }
+};
+const HEART = { g: null, ch: {}, valves: {}, ves: {}, cut: false, sel: null, pk: [] };
+const HB = { bpm: 75, t: 0, phase: 0, rate: .6, fixed: null, paused: false };
+
+/* heartbeat: simplified, coordinated cycle (phase 0..1) */
+function beatState(p) {
+  const bump = (a, b) => p < a || p > b ? 0 : Math.sin(Math.PI * (p - a) / (b - a));
+  return { a: bump(0, .13), v: bump(.14, .46), av: 1 - (sstep(.13, .17, p) - sstep(.46, .52, p)), sl: sstep(.15, .19, p) - sstep(.43, .48, p) };
+}
+const PHASES = [['Atria squeeze', .06, 'The two atria contract and push the last of the blood down into the ventricles. The tricuspid and mitral valves are open.'], ['Ventricles squeeze', .3, 'The ventricles contract. The tricuspid and mitral valves snap shut; the pulmonary and aortic valves open and blood is pushed out to the lungs and the body.'], ['Heart relaxes & fills', .7, 'The heart relaxes. The pulmonary and aortic valves close so blood cannot fall back. The tricuspid and mitral valves open and the chambers fill with blood.']];
+
+class Valve {
+  constructor(id, pos, dir, R, n) {
+    this.id = id; this.g = new THREE.Group(); this.g.position.set(...pos); this.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...dir).normalize());
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(R, .07 * (R / .6 + .5), 8, 28), M.steel); ring.userData.pid = id; this.g.add(ring); HEART.pk.push(ring); this.leaf = [];
+    this.mat = M.valve.clone(); this.R = R;
+    for (let k = 0; k < n; k++) {
+      const piv = new THREE.Group(), ph = k / n * 6.2832 + .5; piv.rotation.z = ph; piv.position.set(Math.cos(ph) * R, Math.sin(ph) * R, 0);
+      const w = R * Math.sin(Math.PI / n) * .98, sh = new THREE.Shape(); sh.moveTo(0, -w); sh.lineTo(0, w); sh.lineTo(-R * .98, 0); sh.closePath();
+      const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), this.mat); m.userData.pid = id; piv.add(m); this.g.add(piv); this.leaf.push(piv); HEART.pk.push(m);
+    }
+    HEART.g.add(this.g); this.setOpen(0);
+  }
+  setOpen(o) { this.open = o; for (const l of this.leaf) { l.rotation.y = -o * 1.05; } }
+}
+function tubeMesh(pts, r, col, id, o) {
+  o = o || {}; const cv = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)), false, 'centripetal'), segs = Math.min(220, Math.max(10, Math.round(cv.getLength() * 5)));
+  const m = new THREE.Mesh(new THREE.TubeGeometry(cv, segs, r, 14, false), new THREE.MeshStandardMaterial({ color: col, roughness: .45, metalness: .05, transparent: true, opacity: o.op || .88, emissive: col, emissiveIntensity: .12 }));
+  m.userData.pid = id; HEART.g.add(m); HEART.pk.push(m); m.userData.base = .12; (HEART.ves[id] = HEART.ves[id] || []).push(m); return m;
+}
+function makeBed(cx, cy, cz, r, n, cA, cB, ax) {
+  const pos = [], col = [], A = new THREE.Color(cA), B = new THREE.Color(cB);
+  for (let i = 0; i < n; i++) {
+    let p = new THREE.Vector3((rnd() - .5) * 2, (rnd() - .5) * 2, (rnd() - .5) * 2).normalize().multiplyScalar(r * (.3 + rnd() * .7)), q = new THREE.Vector3((rnd() - .5) * 2, (rnd() - .5) * 2, (rnd() - .5) * 2).normalize().multiplyScalar(r * (.3 + rnd() * .7));
+    const a = new THREE.Vector3(-r * 1.1 * ax, 0, 0), b = new THREE.Vector3(r * 1.1 * ax, 0, 0), cu = new THREE.CubicBezierCurve3(a, p, q, b), pts = cu.getPoints(10);
+    for (let k = 0; k < 10; k++) { pos.push(pts[k].x + cx, pts[k].y + cy, pts[k].z + cz, pts[k + 1].x + cx, pts[k + 1].y + cy, pts[k + 1].z + cz); const c1 = A.clone().lerp(B, k / 10), c2 = A.clone().lerp(B, (k + 1) / 10); col.push(c1.r, c1.g, c1.b, c2.r, c2.g, c2.b); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const l = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .85, blending: THREE.AdditiveBlending, depthWrite: false })); HEART.g.add(l);
+  const s = new THREE.Sprite(glowMat(0xffffff)); s.scale.set(r * 2.6, r * 2.6, 1); s.position.set(cx, cy, cz); s.material = s.material.clone(); s.material.opacity = .25; HEART.g.add(s); return l;
+}
+
+/* two closed circuits through the heart: A = head + right lung, B = legs + left lung */
+const CIRC = [];
+const CA = [['bed', 0, 16, 0], ['v1', -1.3, 14.5, 0], ['v2', -1.4, 11, 0], ['v3', -1.8, 7, .1], ['svc', -2.1, 4.2, .2], ['svc2', -2.1, 2.9, .3], ['ra', -2.0, 1.5, .3], ['ra2', -1.8, .5, .35], ['tri', -1.35, -.15, .4], ['rv', -1.0, -1.1, .5], ['rv2', -.8, -1.9, .5], ['rv3', -.35, -.9, .65], ['pulv', -.5, .95, .75], ['pa', -.45, 2.3, .8], ['pa2', -.8, 3.2, .5], ['rpa', -2.8, 3.5, 0], ['rpa2', -5, 3.2, -.3], ['lung', -7.4, 2.8, -.4], ['pvs', -5.2, 2.0, -1.3], ['pvs2', -2.5, 1.9, -1.4], ['la', .2, 1.8, -1.0], ['la2', 1.4, 1.5, -.9], ['mit', 1.35, .15, -.35], ['lv', 1.2, -.8, 0], ['lv2', 1.45, -1.9, .1], ['lv3', .9, -1.4, .15], ['lv4', .5, -.1, .1], ['aov', .35, .9, .1], ['ao', .4, 2.0, .1], ['ao2', .75, 3.4, 0], ['car', 1.25, 4.6, -.15], ['car2', 1.4, 8, 0], ['car3', 1.3, 12.5, 0], ['art', 1.2, 14.8, 0]];
+const CB = [['bed', 0, -23.3, 0], ['iv1', -2.2, -21, 0], ['iv2', -2.2, -12, .05], ['iv3', -2.1, -5, .2], ['iv4', -2.0, -1.2, .3], ['ra2', -1.85, .5, .35], ['ra', -2.0, 1.4, .3], ['ra3', -1.7, .6, .35], ['tri', -1.35, -.15, .4], ['rv', -1.0, -1.1, .5], ['rv2', -.8, -1.9, .5], ['rv3', -.35, -.9, .65], ['pulv', -.5, .95, .75], ['pa', -.45, 2.3, .8], ['pa2', .1, 3.3, .5], ['lpa', 1.2, 3.5, .1], ['lpa2', 4, 3.3, -.2], ['lpa3', 6.2, 3.0, -.3], ['lung', 7.4, 2.8, -.4], ['pvs', 5.4, 2.0, -1.3], ['pvs2', 3.2, 1.8, -1.3], ['la2', 1.6, 1.5, -.9], ['mit', 1.35, .15, -.35], ['lv', 1.2, -.8, 0], ['lv2', 1.45, -1.9, .1], ['lv3', .9, -1.4, .15], ['lv4', .5, -.1, .1], ['aov', .35, .9, .1], ['ao', .4, 2.0, .1], ['ao2', .75, 3.4, 0], ['arch', 1.7, 4.3, -.35], ['arch2', 2.7, 3.3, -.8], ['dsc', 3.0, .5, -1.2], ['dsc2', 2.9, -8, -1.2], ['dsc3', 2.5, -18, -.8], ['art', 2.2, -22, -.4]];
+function buildCircuit(src) {
+  const pts = src.map(a => new THREE.Vector3(a[1], a[2], a[3])), cv = new THREE.CatmullRomCurve3(pts, true, 'centripetal'); cv.arcLengthDivisions = 800;
+  const N = 1600, s = new Array(N + 1), mk = {}; for (let i = 0; i <= N; i++) s[i] = cv.getPointAt(i / N);
+  src.forEach((a, i) => { let bi = 0, bd = 1e9; for (let k = 0; k < N; k++) { const d = s[k].distanceToSquared(pts[i]); if (d < bd) { bd = d; bi = k; } } mk[a[0]] = bi / N; });
+  return { cv, mk, len: cv.getLength() };
+}
+const inRange = (u, a, b) => a <= b ? (u >= a && u <= b) : (u >= a || u <= b);
+
+function buildHeart() {
+  const G = HEART.g = new THREE.Group(); scene.add(G);
+  const WALL = { ra: [0xcf5a78, [-2.0, 1.2, .3], [1.35, 1.5, 1.3], 0, .25], rv: [0xc4506f, [-.7, -1.0, .5], [1.5, 2.2, 1.4], -.15, .3], la: [0xdc4a58, [1.5, 1.5, -.9], [1.3, 1.1, 1.2], 0, .25], lv: [0xd9404d, [1.2, -1.2, 0], [1.7, 2.5, 1.6], .25, .65] };
+  const clipMats = HEART.clipMats = [];
+  for (const k in WALL) {
+    const w = WALL[k], grp = new THREE.Group(); grp.position.set(...w[1]); grp.rotation.z = w[3]; G.add(grp);
+    const mat = M.muscle(w[0]); mat.emissive = new THREE.Color(0x00cfff); mat.emissiveIntensity = 0; const wall = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 28), mat); wall.scale.set(...w[2]); wall.userData.pid = k; grp.add(wall); HEART.pk.push(wall);
+    const low = k === 'ra' || k === 'rv', bm = new THREE.MeshBasicMaterial({ color: low ? 0x2f66ff : 0xff2e44, transparent: true, opacity: .5, depthWrite: false }); const blood = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), bm); blood.scale.set(w[2][0] - w[4], w[2][1] - w[4], w[2][2] - w[4]); blood.visible = false; grp.add(blood);
+    if (k === 'ra' || k === 'la') { const au = new THREE.Mesh(new THREE.SphereGeometry(.62, 20, 14), mat); au.scale.set(1, 1.15, .8); au.position.set(k === 'ra' ? 1.0 : -.9, w[2][1] * .85, k === 'ra' ? .9 : 1.1); au.userData.pid = k; grp.add(au); HEART.pk.push(au); }
+    HEART.ch[k] = { grp, wall, blood, mat, bm, base: w[1].slice(), wallT: w[4] }; clipMats.push(mat, bm);
+  }
+  /* coronary vessels on the surface (decoration) */
+  const cor = (pts, c) => { const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), 24, .07, 6, false), new THREE.MeshStandardMaterial({ color: c, roughness: .5 })); G.add(m); return m; };
+  HEART.cor = [cor([[-.2, .9, 1.5], [-.4, -.4, 2.0], [-.5, -1.6, 2.1], [-.2, -3, 1.3]], 0xe84a5a), cor([[1.8, .6, 1.2], [2.6, -.6, 1.4], [2.7, -2, 1.0]], 0xe84a5a), cor([[-2.4, .2, 1.2], [-2.4, -1.4, 1.4], [-1.7, -2.5, 1.6]], 0x5b86ff)];
+  /* valves */
+  HEART.valves.tri = new Valve('tri', [-1.35, -.15, .4], [1.3, -2.2, .5], .7, 3); HEART.valves.pulv = new Valve('pulv', [-.5, .95, .75], [0, 1, .1], .5, 3);
+  HEART.valves.mit = new Valve('mit', [1.35, .15, -.35], [-.1, -1.4, .5], .68, 2); HEART.valves.aov = new Valve('aov', [.35, .9, .1], [0, 1, 0], .5, 3);
+  /* vessels */
+  tubeMesh([[-2.1, 2.2, .3], [-2.1, 4.4, .2], [-1.8, 7, .1], [-1.4, 11, 0], [-1.3, 14.6, 0]], .52, 0x3b6cff, 'svc');
+  tubeMesh([[-2.2, -23, 0], [-2.1, -8, .1], [-2.0, -2, .25], [-2.0, .6, .3]], .56, 0x3b6cff, 'ivc');
+  tubeMesh([[.35, .7, .1], [.4, 2.0, .1], [.75, 3.4, 0], [1.7, 4.3, -.35], [2.7, 3.3, -.8], [3.0, .5, -1.2], [2.9, -8, -1.2], [2.5, -18, -.8], [2.2, -22.6, -.4]], .5, 0xe0364a, 'aorta');
+  tubeMesh([[1.1, 4.3, -.2], [1.4, 8, 0], [1.3, 12.5, 0], [1.2, 14.8, 0]], .28, 0xe0364a, 'aorta');
+  tubeMesh([[-.5, .9, .75], [-.4, 2.4, .8], [-.7, 3.3, .5]], .5, 0x3b6cff, 'pa'); tubeMesh([[-.7, 3.3, .5], [-2.8, 3.5, 0], [-5, 3.2, -.3], [-7.0, 2.9, -.4]], .34, 0x3b6cff, 'pa'); tubeMesh([[-.7, 3.3, .5], [1.2, 3.5, .1], [4, 3.3, -.2], [7.0, 2.9, -.4]], .34, 0x3b6cff, 'pa');
+  tubeMesh([[-7.0, 2.0, -1.2], [-4.5, 1.9, -1.4], [-1.5, 1.9, -1.35], [.7, 1.8, -1.0]], .26, 0xe0364a, 'pv'); tubeMesh([[-7.0, 1.0, -1.1], [-4.5, 1.1, -1.4], [-1.5, 1.3, -1.35], [.8, 1.4, -1.0]], .26, 0xe0364a, 'pv');
+  tubeMesh([[7.0, 2.0, -1.2], [4.8, 1.9, -1.4], [3.0, 1.8, -1.2], [2.3, 1.6, -1.0]], .26, 0xe0364a, 'pv'); tubeMesh([[7.0, 1.0, -1.1], [4.8, 1.1, -1.4], [3.0, 1.3, -1.2], [2.4, 1.3, -.95]], .26, 0xe0364a, 'pv');
+  /* lungs + capillary beds */
+  HEART.lungs = new THREE.Group(); G.add(HEART.lungs);
+  [-1, 1].forEach(sd => {
+    const lm = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), rimMat(0xff9fb4, 1.2)); lm.scale.set(2.7, 5.2, 2.2); lm.position.set(sd * 8.2, 1.3, -.6); lm.userData.pid = 'lungs'; HEART.lungs.add(lm); HEART.pk.push(lm);
+    const fill = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), new THREE.MeshBasicMaterial({ color: 0xff8aa0, transparent: true, opacity: .1, depthWrite: false })); fill.scale.copy(lm.scale); fill.position.copy(lm.position); HEART.lungs.add(fill);
+    const bed = makeBed(sd * 7.4, 2.4, -.5, 1.9, W.gfx === 'low' ? 26 : 46, sd < 0 ? 0x3b6cff : 0x3b6cff, 0xff3347, 1); bed.userData.lung = 1;
+  });
+  makeBed(0, 16, 0, 1.2, 36, 0xff3347, 0x3b6cff, 1); makeBed(0, -23.3, 0, 1.4, 36, 0xff3347, 0x3b6cff, 1);
+  /* body silhouette */
+  HEART.body = new THREE.Group(); G.add(HEART.body); const bm = () => rimMat(0x5fd0ff, 1);
+  const part = (geo, x, y, z, rot) => { const m = new THREE.Mesh(geo, bm()); m.position.set(x, y, z); if (rot) m.rotation.z = rot; HEART.body.add(m); return m; };
+  const torso = part(new THREE.SphereGeometry(1, 36, 24), 0, -1.8, -.6); torso.scale.set(9.6, 13.4, 5.2); part(new THREE.SphereGeometry(3.1, 28, 20), 0, 16.2, 0); part(new THREE.CylinderGeometry(1.5, 1.8, 4, 16), 0, 12, -.2);
+  part(new THREE.CapsuleGeometry(2.3, 11, 6, 14), -2.4, -21, -.2); part(new THREE.CapsuleGeometry(2.3, 11, 6, 14), 2.4, -21, -.2);
+  part(new THREE.CapsuleGeometry(1.8, 10, 6, 14), -11.2, 1.2, -.4, .12); part(new THREE.CapsuleGeometry(1.8, 10, 6, 14), 11.2, 1.2, -.4, -.12);
+  /* circuits & particles */
+  CIRC.push(buildCircuit(CA), buildCircuit(CB)); CIRC[0].nP = W.gfx === 'low' ? 26 : 40; CIRC[1].nP = W.gfx === 'low' ? 30 : 50;
+  CIRC.forEach((c, ci) => {
+    c.im = new THREE.InstancedMesh(new THREE.SphereGeometry(.17, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }), c.nP); c.im.frustumCulled = false; c.off = []; c.u0 = [];
+    for (let i = 0; i < c.nP; i++) { c.off.push(new THREE.Vector3((rnd() - .5) * .45, (rnd() - .5) * .45, (rnd() - .5) * .45)); c.u0.push(i / c.nP); c.im.setColorAt(i, new THREE.Color(1, 1, 1)); }
+    c.d = new THREE.Object3D(); c.col = new THREE.Color(); G.add(c.im); c.bed = c.mk.bed; c.lung = c.mk.lung;
+  });
+  /* journey cell */
+  const J = HEART.cell = new THREE.Group(); const cm = new THREE.Mesh(new THREE.SphereGeometry(.42, 20, 14), new THREE.MeshBasicMaterial({ color: 0x3b6cff })); const halo = new THREE.Sprite(glowMat(0xffffff)); halo.scale.set(2.6, 2.6, 1); J.add(cm, halo); J.visible = false; G.add(J); J.userData = { cm, halo };
+  /* leader labels */
+  const LB = (id, txt, a, o, pid, key) => addLabel(id, txt, a, o, ['explore', 'chambers', 'valves'], { pid, key });
+  LB('l_ra', 'Right atrium', [-2.4, 1.2, 1.0], [-4.2, .6, 1.2], 'ra', 'chamber'); LB('l_rv', 'Right ventricle', [-1.6, -2.4, 1.6], [-3.6, -2.4, 1.0], 'rv', 'chamber'); LB('l_la', 'Left atrium', [2.2, 1.9, -.4], [4.2, 1.8, 1.0], 'la', 'chamber'); LB('l_lv', 'Left ventricle', [2.5, -2.0, 1.0], [3.6, -2.6, 1.0], 'lv', 'chamber');
+  LB('l_svc', 'Superior vena cava', [-2.1, 5.0, .2], [-4.8, 1.4, 0], 'svc', 'vessel'); LB('l_ivc', 'Inferior vena cava', [-2.1, -3.2, .2], [-4.4, -.8, 0], 'ivc', 'vessel'); LB('l_pa', 'Pulmonary arteries', [-.45, 2.7, .9], [-.2, 3.4, 1.4], 'pa', 'vessel'); LB('l_pv', 'Pulmonary veins', [3.4, 1.6, -1.3], [3.6, -.6, 1.2], 'pv', 'vessel'); LB('l_ao', 'Aorta', [2.7, 3.6, -.6], [3.6, 2.2, 0], 'aorta', 'vessel');
+  LB('l_tri', 'Tricuspid valve', [-1.35, -.15, .5], [-4.6, -1.0, 2.0], 'tri', 'valve'); LB('l_pulv', 'Pulmonary valve', [-.5, .95, .8], [-3.4, 3.4, 2.0], 'pulv', 'valve'); LB('l_mit', 'Mitral valve', [1.35, .15, -.2], [4.8, -.6, 1.6], 'mit', 'valve'); LB('l_aov', 'Aortic valve', [.35, .9, .2], [4.8, 3.3, 1.8], 'aov', 'valve');
+  HEART.setCut(false);
+}
+HEART.setCut = function (on) {
+  this.cut = on;
+  for (const k in this.ch) { const c = this.ch[k]; c.mat.clippingPlanes = on ? [CLIP] : null; c.mat.transparent = on; c.mat.opacity = on ? .42 : 1; c.mat.depthWrite = !on; c.mat.side = on ? THREE.DoubleSide : THREE.FrontSide; c.mat.needsUpdate = true; c.bm.clippingPlanes = on ? [CLIP] : null; c.bm.needsUpdate = true; c.blood.visible = on; }
+  this.cor.forEach(m => m.visible = !on);
+};
+HEART.focus = function (on) { for (const id in this.ves) this.ves[id].forEach(m => { m.material.opacity = on ? .22 : .88; m.material.depthWrite = !on; }); this.lungs.visible = !on; };
+HEART.select = function (id) { this.sel = id; };
+function updHeart(dt) {
+  const G = HEART.g;
+  if (!HB.paused && HB.fixed === null) { HB.t += dt * HB.bpm / 60 * HB.rate; HB.phase = HB.t % 1; } if (HB.fixed !== null) HB.phase = HB.fixed;
+  if (!G.visible) return;
+  const s = beatState(HB.phase), bt = performance.now() / 1000;
+  const sc = { ra: 1 - .09 * s.a, la: 1 - .09 * s.a, rv: 1 - .13 * s.v, lv: 1 - .15 * s.v };
+  const p = HB.phase, fv = p < .14 ? 1 : p < .46 ? lerp(1, .55, sstep(.14, .46, p)) : lerp(.55, 1, sstep(.5, 1, p)), fa = p < .13 ? lerp(1, .6, sstep(0, .13, p)) : p < .5 ? lerp(.6, 1, sstep(.15, .5, p)) : 1, fl = { ra: fa, la: fa, rv: fv, lv: fv };
+  for (const k in HEART.ch) { const c = HEART.ch[k]; c.grp.scale.setScalar(sc[k]); if (!c.bs) c.bs = c.blood.scale.clone(); c.blood.scale.copy(c.bs).multiplyScalar(fl[k]); c.mat.emissiveIntensity = HEART.sel === k ? .35 + .2 * Math.sin(bt * 5) : 0; }
+  HEART.valves.tri.setOpen(s.av); HEART.valves.mit.setOpen(s.av); HEART.valves.pulv.setOpen(s.sl); HEART.valves.aov.setOpen(s.sl);
+  for (const k in HEART.valves) { const v = HEART.valves[k]; v.mat.emissive.setHex(HEART.sel === k ? 0x22aacc : 0x332200); v.g.children[0].material = HEART.sel === k ? M.cyan : M.steel; }
+  for (const id in HEART.ves) HEART.ves[id].forEach(m => m.material.emissiveIntensity = HEART.sel === id ? .55 + .3 * Math.sin(bt * 5) : .12);
+}
+const BLUE3 = new THREE.Color(0x3b6cff), RED3 = new THREE.Color(0xff3347);
+function circuitColor(c, u, out) { /* blue from tissue bed to lung bed; red from lung bed to tissue bed */ const a = c.bed, b = c.lung; const toBlue = sstep(0, .012, wrapU(u - a)) , toRed = sstep(0, .012, wrapU(u - b)); const inBlue = inRange(u, a, b); return out.copy(inBlue ? BLUE3 : RED3).lerp(inBlue ? RED3 : BLUE3, 1 - Math.min(1, inBlue ? toBlue : toRed)); }
+function wrapU(x) { return ((x % 1) + 1) % 1; }
+const FLOW = { mode: 'all', speed: 1, on: true };
+function updFlow(dt) {
+  for (let ci = 0; ci < CIRC.length; ci++) {
+    const c = CIRC[ci]; c.im.visible = FLOW.on; if (!FLOW.on) continue; const sp = 5.4 * FLOW.speed * Math.pow(HB.bpm / 75, .7) / c.len; c.adv = ((c.adv || 0) + dt * sp) % 1;
+    const m = c.mk, pulm = [m.rv, m.mit], syst = [m.lv, m.tri];
+    for (let i = 0; i < c.nP; i++) {
+      const u = (c.u0[i] + c.adv) % 1; c.cv.getPointAt(u, c.d.position); c.d.position.add(c.off[i]);
+      let sc = 1, dim = 1; if (FLOW.mode === 'pulm') { const ok = inRange(u, pulm[0], pulm[1]); sc = ok ? 1 : .4; dim = ok ? 1 : .25; } else if (FLOW.mode === 'syst') { const ok = inRange(u, syst[0], syst[1]); sc = ok ? 1 : .4; dim = ok ? 1 : .25; }
+      c.d.scale.setScalar(sc); c.d.updateMatrix(); c.im.setMatrixAt(i, c.d.matrix); circuitColor(c, u, c.col); c.col.multiplyScalar(dim); c.im.setColorAt(i, c.col);
+    }
+    c.im.instanceMatrix.needsUpdate = true; c.im.instanceColor.needsUpdate = true;
+  }
+}
+
+/* =====================================================================
+   STAGES (part 1): framework, title, explore, journey, chambers, valves
+   ===================================================================== */
+const btn = (a, l, c, x) => `<button class="btn ${c || ''}" data-act="${a}" ${x || ''}>${l}</button>`;
+const sliderH = (id, label, val, min, max, step, shown) => `<div class="ctl"><label for="${id}">${label}<span id="${id}v" class="pill">${shown}</span></label><input type="range" id="${id}" data-in="${id}" min="${min}" max="${max}" step="${step || 1}" value="${val}"></div>`;
+const OXP = ox => ox === 'low' ? '<span class="pill" style="background:#1d3f9a">🔵 relatively low oxygen</span>' : ox === 'high' ? '<span class="pill" style="background:#9a1d33">🔴 relatively high oxygen</span>' : '<span class="pill">🔵 → 🔴 gains oxygen</span>';
+const FI = {
+  ra: ['the body (through the two venae cavae)', 'the right ventricle (through the tricuspid valve)'], rv: ['the right atrium (through the tricuspid valve)', 'the lungs (through the pulmonary valve and pulmonary arteries)'],
+  la: ['the lungs (through the pulmonary veins)', 'the left ventricle (through the mitral valve)'], lv: ['the left atrium (through the mitral valve)', 'the whole body (through the aortic valve and the aorta)'],
+  tri: ['the right atrium', 'the right ventricle'], pulv: ['the right ventricle', 'the pulmonary arteries'], mit: ['the left atrium', 'the left ventricle'], aov: ['the left ventricle', 'the aorta'],
+  svc: ['the head, neck and arms', 'the right atrium'], ivc: ['the trunk and legs', 'the right atrium'], pa: ['the right ventricle', 'the lungs'], pv: ['the lungs', 'the left atrium'], aorta: ['the left ventricle', 'the head, arms, organs and legs']
+};
+function cardFor(id) {
+  const P = PARTS[id]; if (!P) return ''; const f = FI[id];
+  return `<div class="box fact"><b>${P.n}</b> ${OXP(P.ox)}<p style="margin:.45em 0">${P.t}</p>${f ? `<small><b>Blood comes from:</b> ${f[0]}<br><b>Blood goes to:</b> ${f[1]}</small>` : ''}</div>`;
+}
+const selBtns = (ids, cls) => ids.map(i => btn('sel:' + i, PARTS[i].n.replace(' valve', '').replace('Superior vena cava', 'Sup. vena cava').replace('Inferior vena cava', 'Inf. vena cava'), 'sm' + (HEART.sel === i ? ' on' : ''), `aria-label="Select ${PARTS[i].n}"`)).join('');
+const OVER = { t: [0, -2.5, 0], d: 80, yaw: 0, pitch: .06 }, CLOSE = { t: [0, .4, 0], d: 25, yaw: 0, pitch: .12 }, TITLEV = { t: [0, 1.5, 0], d: 40, yaw: 0, pitch: .08 };
+
+const Stage = {
+  cur: null, id: null, list: {}, keepFollow: false, pk: [],
+  enter(id) {
+    if (this.cur) this.cleanup();
+    const s = this.list[id]; this.cur = s; this.id = id; W.mode = id;
+    HB.fixed = null; HB.paused = false; HB.bpm = 75; HB.rate = .6; FLOW.mode = 'all'; FLOW.on = true; FLOW.speed = 1; HEART.sel = null; HEART.setCut(false); HEART.focus(false);
+    HEART.g.visible = s.heart !== false; HEART.body.visible = s.body !== false; HEART.lungs.visible = true; HEART.cell.visible = false; this.keepFollow = false;
+    this.G = new THREE.Group(); scene.add(this.G); this.pk = [];
+    camGo(s.cam, false); CAM.auto = !!s.auto; CAM.min = s.min || 4; CAM.max = s.max || 130;
+    s.enter();
+  },
+  addPick(m) { this.pk.push(m); PICK.push(m); },
+  cleanup() {
+    const s = this.cur; if (s.exit) s.exit();
+    this.pk.forEach(m => { const i = PICK.indexOf(m); if (i >= 0) PICK.splice(i, 1); }); this.pk = [];
+    if (this.G) { scene.remove(this.G); this.G.traverse(o => { if (o.geometry) o.geometry.dispose(); }); this.G = null; }
+    HEART.cell.visible = false; CAM.follow = null; this.keepFollow = false; HEART.sel = null; FLOW.mode = 'all'; HEART.g.visible = true;
+  },
+  update(dt, raw) {
+    const s = this.cur; if (!s) return;
+    if (s.heart !== false) { updHeart(dt); updFlow(dt); } else updHeart(dt);
+    if (s.update) s.update(dt, raw);
+  }
+};
+function initStages() { /* stages register themselves; nothing heavy to prepare */ }
+
+/* generic part-selection used by several stages */
+function selectPart(id) { HEART.sel = id; if (Stage.cur && Stage.cur.onSel) Stage.cur.onSel(id); UI.render(); }
+
+/* ---------- TITLE ---------- */
+Stage.list.title = { cam: TITLEV, auto: true, enter() { }, panel() { return ''; } };
+
+/* ---------- EXPLORE THE HEART ---------- */
+Stage.list.explore = {
+  cam: CLOSE, cut: false, over: false,
+  enter() { this.cut = false; this.over = false; },
+  tap(pid) { if (pid && PARTS[pid]) selectPart(pid); else if (!pid) selectPart(null); },
+  act(k, v) {
+    if (k === 'sel') selectPart(v === HEART.sel ? null : v);
+    else if (k === 'cut') { this.cut = !this.cut; HEART.setCut(this.cut); UI.render(); }
+    else if (k === 'over') { this.over = !this.over; camGo(this.over ? OVER : CLOSE); UI.render(); }
+    else if (k === 'beat') { HB.paused = !HB.paused; UI.render(); }
+    else if (k === 'reset') { this.over = false; camGo(CLOSE); }
+  },
+  panel() {
+    return `<div class="kick">Explore the Heart</div><h3>The 3D heart</h3>
+    <p><b>Drag</b> to rotate, <b>pinch or scroll</b> to zoom. <b>Tap any part</b> of the heart, or choose it below, to see its fact card. The heart is shown as you would see it facing someone, so the <b>patient’s right side is on your left</b>.</p>
+    <div class="row">${btn('cut', this.cut ? '🫀 External view' : '🔪 Cutaway view', 'sm' + (this.cut ? ' on' : ''))}${btn('over', this.over ? '🔍 Heart close-up' : '🧍 Full-body overview', 'sm' + (this.over ? ' on' : ''))}${btn('beat', HB.paused ? '▶ Resume heartbeat' : '⏸ Pause heartbeat', 'sm')}${btn('reset', '⌖ Reset view', 'sm')}</div>
+    <div class="lh"><b>Chambers</b></div><div class="row">${selBtns(['ra', 'rv', 'la', 'lv'])}</div>
+    <div class="lh"><b>Valves</b></div><div class="row">${selBtns(['tri', 'pulv', 'mit', 'aov'])}</div>
+    <div class="lh"><b>Big vessels</b></div><div class="row">${selBtns(['svc', 'ivc', 'pa', 'pv', 'aorta'])}</div>
+    ${HEART.sel ? cardFor(HEART.sel) : '<div class="box an">Nothing selected yet. Tap a chamber, valve or vessel.</div>'}
+    <div class="box nt"><b>Colour code: </b>🔵 blue = relatively <b>low</b> oxygen, 🔴 red = relatively <b>high</b> oxygen. This is a teaching convention. Real blood is always some shade of red.</div>`;
+  },
+  labelOn() { return true; }
+};
+
+/* ---------- FOLLOW THE BLOOD (15 stages) ---------- */
+const JS = [
+  { n: 'Body tissues', s: 'Tissues', m: 'bed', ox: 'low', t: 'Our blood cell has just delivered oxygen to the body’s cells (muscles, brain, skin…). In return it picked up <b>carbon dioxide</b> and other wastes. Its oxygen content is now relatively <b>low</b>, so we colour it 🔵 blue. Time to head back to the heart!' },
+  { n: 'Vena cava (superior or inferior)', s: 'Vena cava', m: 'svc', ox: 'low', t: 'Tiny vessels join to form bigger and bigger <b>veins</b>. Blood from the head and arms flows down the <b>superior vena cava</b>; blood from the lower body flows up the <b>inferior vena cava</b>. Veins carry blood <b>towards</b> the heart.' },
+  { n: 'Right atrium', s: 'R. atrium', m: 'ra', ox: 'low', t: 'The <b>right atrium</b> is the upper right chamber. It collects the oxygen-poor blood returning from the body.' },
+  { n: 'Tricuspid valve', s: 'Tricuspid', m: 'tri', ox: 'low', t: 'The <b>tricuspid valve</b> (three flaps) opens so blood can move from the right atrium down into the right ventricle. It closes to help stop blood flowing backwards.' },
+  { n: 'Right ventricle', s: 'R. ventricle', m: 'rv', ox: 'low', t: 'The <b>right ventricle</b> is a strong pumping chamber. When its muscle squeezes it sends blood towards the <b>lungs</b>.' },
+  { n: 'Pulmonary valve', s: 'Pulm. valve', m: 'pulv', ox: 'low', t: 'The <b>pulmonary valve</b> opens as the ventricle squeezes, then closes so blood cannot fall back into the heart.' },
+  { n: 'Pulmonary arteries', s: 'Pulm. arteries', m: 'pa', ox: 'low', t: 'The <b>pulmonary arteries</b> carry blood <b>away</b> from the heart to the left and right lungs. They are arteries because of the <i>direction</i> of flow, even though this blood has relatively <b>low</b> oxygen.' },
+  { n: 'Lungs', s: 'Lungs', m: 'lung', ox: 'both', t: 'In the lungs the blood flows through tiny <b>capillaries</b> beside the air sacs. <b>Oxygen enters</b> the blood and <b>carbon dioxide leaves</b> to be breathed out. Watch the cell change from 🔵 blue to 🔴 red. This colour change is a teaching convention for “less oxygen” and “more oxygen”.' },
+  { n: 'Pulmonary veins', s: 'Pulm. veins', m: 'pvs2', ox: 'high', t: 'The <b>pulmonary veins</b> carry blood <b>towards</b> the heart, so they are veins, even though this blood now has relatively <b>high</b> oxygen. Veins are not always “blue”!' },
+  { n: 'Left atrium', s: 'L. atrium', m: 'la', ox: 'high', t: 'The <b>left atrium</b> receives the oxygen-rich blood from the lungs.' },
+  { n: 'Mitral valve', s: 'Mitral', m: 'mit', ox: 'high', t: 'The <b>mitral valve</b> (two flaps) opens to let blood pass from the left atrium into the left ventricle, then closes to stop it flowing back.' },
+  { n: 'Left ventricle', s: 'L. ventricle', m: 'lv', ox: 'high', t: 'The <b>left ventricle</b> has the thickest muscle wall in the heart, because it pushes blood all the way around the body.' },
+  { n: 'Aortic valve', s: 'Aortic valve', m: 'aov', ox: 'high', t: 'The <b>aortic valve</b> opens as the left ventricle squeezes and closes afterwards so blood moves one way only: out to the body.' },
+  { n: 'Aorta', s: 'Aorta', m: 'ao2', ox: 'high', t: 'The <b>aorta</b> is the body’s largest artery. It arches over the heart and branches into smaller and smaller arteries that carry oxygen-rich blood to every part of the body.' },
+  { n: 'Body tissues again', s: 'Tissues', m: 'art', ox: 'high', t: 'Arteries become tiny capillaries in the tissues. <b>Oxygen leaves the blood</b> and enters the body’s cells, which use it with nutrients to release energy. <b>Carbon dioxide enters the blood</b>. Our cell turns 🔵 blue again and the journey starts over. At rest one trip takes roughly a minute.' }
+];
+Stage.list.journey = {
+  cam: { t: [0, 0, 0], d: 13, yaw: .25, pitch: .2 }, heart: true, i: 0, u: 0, tu: 0, auto: true, tm: 0, dur: 7, wide: false, min: 5, max: 90,
+  enter() {
+    this.i = 0; this.auto = true; this.tm = 0; this.wide = false; const c = CIRC[0]; this.u = this.tu = c.mk[JS[0].m]; Stage.keepFollow = true; HEART.setCut(true); HEART.cell.visible = true; this.place(); this.follow();
+    FLOW.speed = .5; $('#stagebar').classList.add('show'); this.lab = LBL.byId.l_cell; UI.renderStageBar(); this.setLab();
+  },
+  exit() { Stage.keepFollow = false; },
+  follow() { camGo({ t: [0, 0, 0], d: this.i === 0 || this.i === 14 ? 16 : this.i === 7 ? 15 : 11, yaw: .25, pitch: .2 }); CAM.follow = () => HEART.cell.position; },
+  place() { const c = CIRC[0]; c.cv.getPointAt(wrapU(this.u), HEART.cell.position); this.paint(); },
+  paint() {
+    const c = CIRC[0], u = this.u, k = sstep(c.mk.lung - .012, c.mk.lung + .02, u), cm = HEART.cell.userData.cm; cm.material.color.copy(BLUE3).lerp(RED3, u > c.mk.lung - .05 ? k : 0);
+    if (this.i === 14) cm.material.color.copy(RED3);
+  },
+  setLab() { if (this.lab) this.lab.el.textContent = '▶ ' + JS[this.i].n; },
+  go(i, instant) { this.i = clamp(i, 0, 14); this.tu = CIRC[0].mk[JS[this.i].m]; if (instant) this.u = this.tu; this.tm = 0; this.setLab(); if (!this.wide) this.follow(); UI.render(); UI.markBar(); },
+  update(dt) {
+    const d = this.tu - this.u; if (Math.abs(d) > 1e-4) { this.u += Math.sign(d) * Math.min(Math.abs(d), Math.max(Math.abs(d) * dt * 2.4, dt * .04)); } this.place();
+    HEART.cell.userData.halo.scale.setScalar(2.4 + .3 * Math.sin(performance.now() / 260));
+    if (this.auto && Math.abs(d) < .004) { this.tm += dt; if (this.tm > this.dur) { if (this.i < 14) this.go(this.i + 1); else { this.auto = false; UI.render(); } } }
+    const e = $('#jBar'); if (e) e.style.width = (this.i + 1) / 15 * 100 + '%';
+  },
+  act(k, v) {
+    if (k === 'next') { this.auto = false; this.go(this.i + 1); } else if (k === 'prev') { this.auto = false; this.go(this.i - 1); }
+    else if (k === 'play') { this.auto = !this.auto; this.tm = this.dur * .6; UI.render(); }
+    else if (k === 'replay') { this.go(0, true); this.auto = true; }
+    else if (k === 'go') { this.auto = false; this.go(+v); }
+    else if (k === 'wide') { this.wide = !this.wide; if (this.wide) { CAM.follow = null; camGo(OVER); } else this.follow(); UI.render(); }
+    else if (k === 'cut') { HEART.setCut(!HEART.cut); UI.render(); }
+  },
+  bar() { return JS.map((s, i) => ({ ico: i + 1, n: s.s })); },
+  barOn(i) { return i === this.i; },
+  labelOn() { return false; },
+  panel() {
+    const s = JS[this.i], col = s.ox === 'low' ? '🔵' : s.ox === 'high' ? '🔴' : '🔵→🔴';
+    return `<div class="kick">Follow the Blood · Stage ${this.i + 1} of 15</div><h3>${s.n}</h3><div class="prog" style="margin:4px 0 8px"><i id="jBar" style="width:${(this.i + 1) / 15 * 100}%"></i></div>
+    <div>${OXP(s.ox)}</div><p style="margin:.5em 0">${s.t}</p>
+    <div class="row">${btn('prev', '◀ Previous', 'sm', this.i === 0 ? 'disabled' : '')}${btn('play', this.auto ? '⏸ Pause' : '▶ Play', 'sm pri')}${btn('next', 'Next ▶', 'sm', this.i === 14 ? 'disabled' : '')}${btn('replay', '↺ Replay', 'sm')}</div>
+    <div class="row">${btn('wide', this.wide ? '🔍 Follow the cell' : '🧍 Return to overview', 'sm')}${btn('cut', HEART.cut ? '🫀 External view' : '🔪 Cutaway view', 'sm')}</div>
+    <div class="box nt"><b>Colour code:</b> ${col} the cell is blue when its blood has relatively <b>low</b> oxygen and red when it has relatively <b>high</b> oxygen. It is an educational convention. Real blood is always red. The path is simplified: in the body blood takes many parallel routes.</div>`;
+  }
+};
+
+/* ---------- FOUR CHAMBERS ---------- */
+const CHI = {
+  ra: { w: 'receives', t: 'Collects oxygen-poor blood from the body, then passes it down to the right ventricle.', c: 'blue' },
+  rv: { w: 'pumps', t: 'Pumps oxygen-poor blood to the lungs. A medium-thick muscle wall is enough for the short trip.', c: 'blue' },
+  la: { w: 'receives', t: 'Collects oxygen-rich blood from the lungs, then passes it down to the left ventricle.', c: 'red' },
+  lv: { w: 'pumps', t: 'Pumps oxygen-rich blood to the whole body. It has the thickest wall because it works against the highest resistance.', c: 'red' }
+};
+Stage.list.chambers = {
+  cam: { t: [0, -.2, .3], d: 19, yaw: .1, pitch: .12 }, body: false, sel: 'lv',
+  enter() {
+    HEART.setCut(true); HEART.focus(true); HEART.sel = this.sel; const V = (a) => new THREE.CatmullRomCurve3(a.map(p => new THREE.Vector3(...p)));
+    const defs = { ra: [[[-2.1, 3.6, .3], [-2.0, 1.4, .3], [-1.4, -.1, .45]], 0x8fb4ff], rv: [[[-1.4, -.1, .45], [-1.0, -1.6, .5], [-.4, -.9, .65], [-.5, 1.0, .75], [-.45, 2.6, .8]], 0x8fb4ff], la: [[[3.6, 1.7, -1.2], [1.8, 1.6, -.9], [1.35, .2, -.35]], 0xff9aa6], lv: [[[1.35, .2, -.35], [1.2, -1.2, 0], [.5, -.1, .1], [.35, .9, .1], [.4, 2.6, .1]], 0xff9aa6] };
+    this.fl = {}; for (const k in defs) { const f = new Flow(V(defs[k][0]), 5, defs[k][1], 1, .22); Stage.G.add(f.m); this.fl[k] = f; } this.vis();
+  },
+  vis() { for (const k in this.fl) this.fl[k].m.visible = HEART.sel === k; },
+  onSel() { this.sel = HEART.sel; this.vis(); },
+  update(dt) { for (const k in this.fl) if (this.fl[k].m.visible) this.fl[k].update(dt); },
+  tap(pid) { if (CHI[pid]) selectPart(pid); },
+  act(k, v) { if (k === 'sel') selectPart(v); else if (k === 'cut') { HEART.setCut(!HEART.cut); UI.render(); } },
+  labelOn(key) { return key === 'chamber'; },
+  panel() {
+    const id = HEART.sel, P = PARTS[id], C = CHI[id], f = FI[id];
+    const wall = `<svg viewBox="0 0 220 96" style="width:100%;max-width:300px" role="img" aria-label="Cross-section sketch: the left ventricle wall is much thicker than the right ventricle wall"><circle cx="60" cy="48" r="38" fill="#9a2a45" opacity=".95"/><circle cx="60" cy="48" r="26" fill="#2f66ff" opacity=".8"/><circle cx="160" cy="48" r="38" fill="#c43a4a"/><circle cx="160" cy="48" r="18" fill="#ff2e44" opacity=".85"/><text x="60" y="94" text-anchor="middle" font-size="11" fill="#bfe6ff">Right ventricle</text><text x="160" y="94" text-anchor="middle" font-size="11" fill="#bfe6ff">Left ventricle</text></svg>`;
+    return `<div class="kick">Four-Chamber Explorer</div><h3>${P ? P.n : 'Choose a chamber'}</h3>
+    <p>The heart has <b>four chambers</b>. The two upper <b>atria</b> receive blood. The two lower <b>ventricles</b> pump it out. The <b>right side</b> sends blood to the lungs and the <b>left side</b> sends blood to the body.</p>
+    <div class="row">${selBtns(['ra', 'rv', 'la', 'lv'])}${btn('cut', HEART.cut ? '🫀 External' : '🔪 Cutaway', 'sm')}</div>
+    ${P ? `<div class="box fact"><b>${P.n}</b> ${OXP(P.ox)}<p style="margin:.4em 0">The ${P.n.toLowerCase()} <b>${C.w}</b> blood. ${C.t}</p><small><b>Blood comes from:</b> ${f[0]}<br><b>Blood goes to:</b> ${f[1]}</small><p style="margin:.4em 0"><small>The moving arrows show the flow direction.</small></p></div>` : ''}
+    <div class="box an"><b>Watch it work:</b> the chambers fill and then squeeze (contract) in a coordinated rhythm. The atria squeeze first, then the ventricles.</div>
+    <div class="box fact"><b>Why is the left ventricle wall thicker?</b> It pushes blood through the whole body, while the right ventricle only sends blood to the nearby lungs. The left ventricle wall is roughly two to three times as thick.<div style="text-align:center">${wall}</div></div>`;
+  }
+};
+
+/* ---------- HEART VALVES ---------- */
+Stage.list.valves = {
+  cam: { t: [0, .3, .4], d: 15, yaw: .12, pitch: .4 }, body: false, tm: 0, min: 5,
+  enter() { HEART.setCut(true); HEART.focus(true); this.tm = 0; },
+  onSel(id) { const v = HEART.valves[id]; if (v) camGo({ t: [v.g.position.x, v.g.position.y, v.g.position.z], d: 8, yaw: .15, pitch: .5 }); else camGo(this.cam); },
+  exit() { HB.fixed = null; },
+  labelOn(key) { return key === 'valve'; },
+  tap(pid) { if (pid && PARTS[pid] && PARTS[pid].k === 'valve') selectPart(pid); },
+  act(k, v) {
+    if (k === 'ph') { HB.fixed = +v; UI.render(); } else if (k === 'play') { HB.fixed = null; UI.render(); } else if (k === 'sel') selectPart(v); else if (k === 'all') { HEART.sel = null; camGo(this.cam); UI.render(); }
+  },
+  input(k, v) { if (k === 'scrub') { HB.fixed = v / 100; $('#scrubv').textContent = Math.round(v) + '%'; } },
+  update(dt) {
+    this.tm += dt; if (this.tm < .12) return; this.tm = 0; const p = HB.phase, s = beatState(p), i = p < .13 ? 0 : p < .46 ? 1 : 2;
+    for (const k of ['tri', 'pulv', 'mit', 'aov']) { const e = $('#vs_' + k); if (e) { const o = HEART.valves[k].open > .5; e.textContent = o ? 'OPEN' : 'CLOSED'; e.style.color = o ? '#7dffb0' : '#ff9aa6'; } }
+    const n = $('#phName'); if (n) { n.textContent = PHASES[i][0]; $('#phDesc').textContent = PHASES[i][2]; }
+  },
+  panel() {
+    const row = (k, n) => `<tr><td>${n}</td><td><b id="vs_${k}">–</b></td></tr>`, fx = HB.fixed !== null;
+    return `<div class="kick">Heart Valves</div><h3>One-way doors</h3>
+    <p>Valves keep blood moving <b>one way</b>. This is a <b>simplified</b> view of one heartbeat. Pick a stage to <b>hold</b> it, or press Play to watch the whole cycle.</p>
+    <div class="row">${btn('ph:.06', '1 · Atria squeeze', 'sm' + (fx && HB.fixed === .06 ? ' on' : ''))}${btn('ph:.3', '2 · Ventricles squeeze', 'sm' + (fx && HB.fixed === .3 ? ' on' : ''))}${btn('ph:.7', '3 · Relax &amp; fill', 'sm' + (fx && HB.fixed === .7 ? ' on' : ''))}${btn('play', '▶ Play', 'sm pri' + (!fx ? ' on' : ''))}</div>
+    <div class="row">${selBtns(['tri', 'pulv', 'mit', 'aov'])}${btn('all', 'Whole heart', 'sm')}</div>
+    <div class="ctl"><label for="scrub">Scrub through the heartbeat<span id="scrubv" class="pill">${Math.round(HB.phase * 100)}%</span></label><input type="range" id="scrub" data-in="scrub" min="0" max="99" step="1" value="${Math.round(HB.phase * 100)}"></div>
+    <div class="box an"><b id="phName">…</b><br><span id="phDesc"></span></div>
+    <table class="rt"><tr><th>Valve</th><th>Now</th></tr>${row('tri', 'Tricuspid (RA ↔ RV)')}${row('pulv', 'Pulmonary (RV → lungs)')}${row('mit', 'Mitral (LA ↔ LV)')}${row('aov', 'Aortic (LV → body)')}</table>
+    ${HEART.sel && PARTS[HEART.sel] && PARTS[HEART.sel].k === 'valve' ? cardFor(HEART.sel) : '<p><small>Tap a valve in the 3D view to learn about it.</small></p>'}
+    <div class="box nt"><b>Not independent doors: </b>valves do not decide when to open. They are pushed open or shut by <b>pressure differences</b> created as the heart muscle squeezes and relaxes. The animation is simplified.</div>`;
+  }
+};
+
+/* =====================================================================
+   STAGES (part 2): pulmonary / systemic, vessels, blood, heartbeat
+   ===================================================================== */
+function addExtraLabels() {
+  const L = (id, t, a, modes, o) => addLabel(id, t, a, null, modes, o || {});
+  const cl = addLabel('l_cell', '▶ Blood cell', [0, 0, 0], null, ['journey'], { always: true, cls: 'you' }); cl.pos = () => HEART.cell.position;
+  L('p_rl', 'Right lung', [-8.2, 6.6, -.6], ['pulm'], { pid: 'lungs' }); L('p_ll', 'Left lung', [8.2, 6.6, -.6], ['pulm'], { pid: 'lungs' });
+  L('p_pa', 'Pulmonary arteries: to the lungs', [0, 4.3, .8], ['pulm']); L('p_pv', 'Pulmonary veins: to the heart', [-3.2, -.2, -1.2], ['pulm']);
+  L('s_head', 'Head & arms', [0, 18.8, 0], ['syst']); L('s_leg', 'Trunk & legs', [0, -25.2, 0], ['syst']); L('s_ao', 'Aorta: to the body', [3.2, 2.5, -1], ['syst']); L('s_vc', 'Venae cavae: back to the heart', [-3.2, 10, 0], ['syst']);
+}
+const XP = (src, names) => names.map(n => { const a = src.find(x => x[0] === n); return new THREE.Vector3(a[1], a[2], a[3]); });
+const TAB = `<table class="rt"><tr><th></th><th>Pulmonary circulation</th><th>Systemic circulation</th></tr>
+<tr><td>Starts at</td><td>Right ventricle</td><td>Left ventricle</td></tr><tr><td>Goes to</td><td>The lungs</td><td>Head, organs, muscles, legs…</td></tr>
+<tr><td>Returns to</td><td>Left atrium</td><td>Right atrium</td></tr><tr><td>Arteries carry</td><td>Relatively <b>low</b>-oxygen blood (pulmonary arteries)</td><td>Relatively <b>high</b>-oxygen blood (aorta and its branches)</td></tr>
+<tr><td>Veins carry</td><td>Relatively <b>high</b>-oxygen blood (pulmonary veins)</td><td>Relatively <b>low</b>-oxygen blood (venae cavae)</td></tr>
+<tr><td>Job</td><td>Pick up oxygen, drop off carbon dioxide</td><td>Deliver oxygen and nutrients, collect wastes</td></tr><tr><td>Pressure (simplified)</td><td>Lower</td><td>Higher</td></tr></table>`;
+function circStage(kind) {
+  const P = kind === 'pulm';
+  return {
+    cam: P ? { t: [0, 2, 0], d: 36, yaw: 0, pitch: .08 } : { t: [0, -3, 0], d: 82, yaw: 0, pitch: .05 }, body: !P, both: false, min: 6,
+    enter() {
+      const mk = (pts, col) => { const f = new Flow(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), P ? 9 : 16, col, 1.05, P ? .1 : .035); Stage.G.add(f.m); return f; };
+      this.fp = [mk(XP(CA, ['rv3', 'pulv', 'pa', 'pa2', 'rpa', 'rpa2', 'lung', 'pvs', 'pvs2', 'la', 'la2']), 0xffd75a), mk(XP(CB, ['pa2', 'lpa', 'lpa2', 'lpa3', 'lung', 'pvs', 'pvs2', 'la2']), 0xffd75a)];
+      this.fs = [mk(XP(CA, ['lv4', 'aov', 'ao', 'ao2', 'car', 'car2', 'car3', 'art', 'bed', 'v1', 'v2', 'v3', 'svc', 'svc2', 'ra', 'ra2', 'tri']), 0x5ff0d0), mk(XP(CB, ['lv4', 'aov', 'ao', 'ao2', 'arch', 'arch2', 'dsc', 'dsc2', 'dsc3', 'art', 'bed', 'iv1', 'iv2', 'iv3', 'iv4', 'ra2', 'tri']), 0x5ff0d0)];
+      this.both = false; this.apply(); if (!P) CAM.max = 140;
+    },
+    apply() { FLOW.mode = this.both ? 'all' : kind; this.fp.forEach(f => f.m.visible = P || this.both); this.fs.forEach(f => f.m.visible = !P || this.both); },
+    update(dt) { [...this.fp, ...this.fs].forEach(f => f.m.visible && f.update(dt)); },
+    act(k) {
+      if (k === 'both') { this.both = !this.both; this.apply(); if (!P) { camGo(this.both ? { t: [0, -3, 0], d: 82, yaw: 0, pitch: .05 } : this.cam); } UI.render(); }
+      else if (k === 'near') camGo({ t: [0, 1, 0], d: 18, yaw: 0, pitch: .1 });
+      else if (k === 'reset') camGo(this.cam);
+      else if (k === 'cut') { HEART.setCut(!HEART.cut); UI.render(); }
+    },
+    tap(pid) { if (pid && PARTS[pid]) { HEART.sel = pid; UI.render(); } },
+    labelOn(key) { return false; },
+    panel() {
+      const intro = P ? `<h3>Pulmonary circulation: heart → lungs → heart</h3><p>The <b>right side</b> of the heart pumps blood to the <b>lungs</b> and the blood returns to the <b>left side</b>. In the lungs the blood <b>gains oxygen</b> and <b>loses carbon dioxide</b>.</p>
+      <ol><li>Right ventricle → <b>pulmonary valve</b></li><li><b>Pulmonary arteries</b> carry relatively <b>low</b>-oxygen blood <i>away</i> from the heart (🔵)</li><li>Lung capillaries: oxygen in, carbon dioxide out</li><li><b>Pulmonary veins</b> return relatively <b>high</b>-oxygen blood (🔴) <i>to</i> the left atrium</li></ol>`
+        : `<h3>Systemic circulation: heart → body → heart</h3><p>The <b>left side</b> of the heart pumps oxygen-rich blood to the <b>whole body</b>. The blood gives up oxygen and returns to the <b>right side</b>.</p>
+      <ol><li>Left ventricle → <b>aortic valve</b> → <b>aorta</b></li><li><b>Arteries</b> carry relatively <b>high</b>-oxygen blood away from the heart (🔴)</li><li>Capillaries in tissues: oxygen and nutrients out, carbon dioxide and wastes in</li><li><b>Veins</b> carry relatively <b>low</b>-oxygen blood (🔵) back through the venae cavae to the right atrium</li></ol>`;
+      return `<div class="kick">${P ? 'Pulmonary' : 'Systemic'} Circulation</div>${intro}
+      <div class="row">${btn('both', this.both ? '☑ Both loops shown' : '⇄ Compare both loops', 'sm' + (this.both ? ' on' : ''))}${btn('near', '🔍 Zoom to heart', 'sm')}${btn('reset', '⌖ Reset view', 'sm')}</div>
+      <p><small>Glowing ${P || this.both ? '<b style="color:#ffd75a">gold</b> arrows = pulmonary loop' : ''}${this.both ? ' · ' : ''}${!P || this.both ? '<b style="color:#5ff0d0">teal</b> arrows = systemic loop' : ''}. The moving cells are 🔵 blue (relatively low oxygen) or 🔴 red (relatively high oxygen).</small></p>
+      <details ${this.both ? 'open' : ''}><summary><b>Side-by-side comparison</b></summary>${TAB}</details>
+      <div class="box nt"><b>Connected loops: </b>the two circulations form <b>one continuous figure-of-eight</b>. The same blood passes through both in turn. Both ventricles pump the same amount of blood per beat.</div>`;
+    }
+  };
+}
+Stage.list.pulm = circStage('pulm'); Stage.list.syst = circStage('syst');
+
+/* ---------- BLOOD VESSELS ---------- */
+const VESS = {
+  artery: { n: 'Artery', dir: 'Carries blood <b>away</b> from the heart', t: 'Thick, muscular, <b>elastic walls</b> that stretch with each heartbeat and spring back, helping to push blood on. Blood flows fast under higher pressure. You can feel a pulse where an artery runs near the skin.', ex: 'Aorta, pulmonary arteries, carotid arteries' },
+  vein: { n: 'Vein', dir: 'Carries blood <b>towards</b> the heart', t: 'Thinner walls and a wider space inside. Many veins have <b>valves</b> that stop blood flowing backwards, and nearby muscles squeeze the veins to help blood along. Pressure is lower.', ex: 'Venae cavae, pulmonary veins, jugular veins' },
+  cap: { n: 'Capillary', dir: 'Connects small arteries to small veins', t: 'The tiniest vessels. Their walls are only <b>one cell thick</b>, so oxygen, nutrients and carbon dioxide can pass through easily. This is where exchange with the tissues happens. Red blood cells squeeze through in single file.', ex: 'In muscle, skin, brain, and around the air sacs of the lungs' }
+};
+const VT = [['artery', 'Artery'], ['vein', 'Vein'], ['cap', 'Capillary']];
+function biconcave(r, th) {
+  const up = [[0, .22], [.15, .24], [.3, .3], [.5, .42], [.7, .5], [.85, .46], [.95, .3], [1, .02]], pts = [];
+  up.slice().reverse().forEach(p => pts.push(new THREE.Vector2(p[0], -p[1] * th))); up.forEach(p => { if (p[0] > 0) pts.push(new THREE.Vector2(p[0], p[1] * th)); });
+  pts.sort((a, b) => 0); /* keep order */ const order = [...up.map(p => new THREE.Vector2(p[0], -p[1] * th)), ...up.slice().reverse().map(p => new THREE.Vector2(p[0], p[1] * th))];
+  const g = new THREE.LatheGeometry(order, 18); g.scale(r, 1, r); return g;
+}
+Stage.list.vessels = {
+  cam: { t: [0, 0, 0], d: 38, yaw: 0, pitch: .1 }, heart: false, sel: null, pulm: false, test: null, min: 8,
+  enter() {
+    const G = Stage.G, L = 14; this.V = {}; this.sel = null; this.test = null; this.pulm = false; HEART.g.visible = false;
+    const shell = (r, col, op, y, rim) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 36, 1, true, .7, Math.PI * 2 - 1.4), new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: op, side: THREE.DoubleSide, roughness: .55, depthWrite: false })); m.rotation.z = Math.PI / 2; m.position.y = y; return m; };
+    const mkV = (key, y, layers, rIn, nCell, cellR, dir) => {
+      const g = new THREE.Group(); g.position.y = y; G.add(g); const meshes = [];
+      layers.forEach(l => { const m = shell(l[0], l[1], l[2], 0); m.userData.pid = key; g.add(m); meshes.push(m); Stage.addPick(m); });
+      const cm = new THREE.MeshStandardMaterial({ color: 0xff3347, roughness: .5, emissive: 0x330008 }), im = new THREE.InstancedMesh(biconcave(cellR, .55), cm, nCell); im.userData.pid = key; g.add(im); Stage.addPick(im);
+      const c = []; for (let i = 0; i < nCell; i++) c.push({ u: i / nCell + rnd() * .02, a: rnd() * 6.28, r: rIn * .62 * Math.sqrt(rnd()), rot: [rnd() * 6, rnd() * 6, rnd() * 6] });
+      return (this.V[key] = { g, layers: meshes, im, cm, cells: c, dir, rIn, y });
+    };
+    const A = mkV('artery', 8.5, [[2.1, 0xb8283e, .95], [1.7, 0xd9505a, .85], [1.28, 0xff8f98, .55]], 1.2, 13, .5, 1);
+    const Vn = mkV('vein', 0, [[1.9, 0x3552b8, .5], [1.75, 0x5b7be6, .45]], 1.75, 9, .5, -1);
+    const C = mkV('cap', -8.5, [[.44, 0xffb0c0, .5]], .4, 8, .22, 1);
+    this.V.artery.bump = [A.layers[0], A.layers[1]];
+    /* vein valves */
+    [-2.5, 3].forEach(x0 => [1, -1].forEach(sg => { const f = new THREE.Mesh(new THREE.BoxGeometry(2, .07, 1.5), new THREE.MeshStandardMaterial({ color: 0xcfe0ff, transparent: true, opacity: .85, roughness: .4 })); f.position.set(x0 - .8, sg * 1.0, 0); f.rotation.z = sg * .42; Vn.g.add(f); }));
+    /* capillary tissue + exchange dots */
+    const tis = []; for (let i = 0; i < 7; i++) { const t = new THREE.Mesh(new THREE.SphereGeometry(1.15, 16, 12), new THREE.MeshBasicMaterial({ color: 0x66c8ff, transparent: true, opacity: .1, depthWrite: false })); t.position.set(-5.5 + i * 1.9, (i % 2 ? 1 : -1) * 1.3, -.4); C.g.add(t); }
+    this.ex = []; const em = new THREE.MeshBasicMaterial({ color: 0xffcfcf }), cm2 = new THREE.MeshBasicMaterial({ color: 0x9fb3cc }); C.ox = new THREE.InstancedMesh(new THREE.SphereGeometry(.08, 8, 6), em, 22); C.co = new THREE.InstancedMesh(new THREE.SphereGeometry(.08, 8, 6), cm2, 22); C.g.add(C.ox, C.co);
+    for (let i = 0; i < 22; i++) this.ex.push({ x: (rnd() - .5) * 12, s: rnd() < .5 ? 1 : -1, t: rnd(), sp: .25 + rnd() * .3 });
+    this.dm = new THREE.Object3D(); this.dm2 = new THREE.Object3D();
+    const T = (txt, x, y, col) => { const s = textSprite(txt, col || '#bfe6ff', 1.3); s.position.set(x, y, 1); G.add(s); return s; };
+    this.tx = [T('← Heart', -9.8, 8.5), T('Body tissues →', 10, 8.5), T('Body tissues →', 10, 0), T('← Heart', -9.8, 0), T('Artery side', -9.8, -8.5), T('Vein side →', 10, -8.5)];
+    this.tx.forEach(t => t.scale.multiplyScalar(.85)); this.setColors();
+    const lb = (id, t, y) => { const l = LBL.byId[id] || addLabel(id, t, [0, y + 3.3, 0], null, ['vessels'], { always: true, pid: id.slice(2), click: () => { Stage.cur.tap(id.slice(2)); } }); return l; }; lb('v_artery', 'Artery', 8.5); lb('v_vein', 'Vein', 0); lb('v_cap', 'Capillary (magnified)', -8.5);
+    LBL.byId.v_cap.pos.y = -8.5 + 1.6; LBL.byId.v_artery.pos.y = 8.5 + 3.0; LBL.byId.v_vein.pos.y = 3.0; ['v_artery', 'v_vein', 'v_cap'].forEach(i => LBL.byId[i].on = true); this.show();
+  },
+  exit() { HEART.g.visible = true; ['v_artery', 'v_vein', 'v_cap'].forEach(i => { const l = LBL.byId[i]; if (l) l.on = false; }); },
+  setColors() {
+    const lo = new THREE.Color(0x3b6cff), hi = new THREE.Color(0xff3347); this.V.artery.cm.color.copy(this.pulm ? lo : hi); this.V.vein.cm.color.copy(this.pulm ? hi : lo); this.V.cap.cm.color.copy(hi);
+    this.V.cap.cm.emissive.setHex(0x330008); this.V.artery.cm.emissive.setHex(this.pulm ? 0x001035 : 0x330008); this.V.vein.cm.emissive.setHex(this.pulm ? 0x330008 : 0x001035);
+  },
+  show() {
+    const t = this.test; for (const k in this.V) { const v = this.V[k]; v.g.visible = !t || t.cur === k; v.g.position.y = t ? 0 : v.y; }
+    this.tx.forEach((s, i) => s.visible = !t && true);
+    ['v_artery', 'v_vein', 'v_cap'].forEach(i => { const l = LBL.byId[i]; l.on = !t && W.mode === 'vessels'; });
+  },
+  update(dt) {
+    const bs = beatState(HB.phase), T = performance.now() / 1000, L = 14, d = this.dm;
+    for (const k in this.V) {
+      const v = this.V[k]; if (!v.g.visible) continue; const sp = k === 'artery' ? .08 * (1 + 1.2 * bs.v) : k === 'vein' ? .05 : .032;
+      v.cells.forEach((c, i) => {
+        c.u = (c.u + dt * sp * FLOW.speed * (HB.paused ? 0 : 1)) % 1; const x = (v.dir > 0 ? c.u : 1 - c.u) * L - L / 2, sq = k === 'cap' ? 0 : 1;
+        d.position.set(x, Math.cos(c.a) * c.r * sq, Math.sin(c.a) * c.r * sq); d.rotation.set(c.rot[0] + T * .4, c.rot[1] + T * .3, c.rot[2]); if (k === 'cap') { d.rotation.set(0, 0, Math.PI / 2); d.rotation.x = 0; } d.scale.set(k === 'cap' ? 1.35 : 1, 1, k === 'cap' ? .8 : 1); d.updateMatrix(); v.im.setMatrixAt(i, d.matrix);
+      }); v.im.instanceMatrix.needsUpdate = true;
+    }
+    this.V.artery.bump.forEach((m, i) => m.scale.set(1, 1 + .04 * bs.v * (i ? .6 : 1), 1 + .04 * bs.v * (i ? .6 : 1)));
+    const C = this.V.cap; if (C.g.visible) { const d2 = this.dm2; this.ex.forEach((e, i) => { e.t = (e.t + dt * e.sp) % 1; const out = e.s > 0, y = (out ? e.t : 1 - e.t) * 1.5 * e.s * (out ? 1 : 1); d2.position.set(e.x, y * (out ? 1 : 1) + (e.s * .3), .1 * Math.sin(e.t * 9)); d2.scale.setScalar(1); d2.updateMatrix(); (out ? C.ox : C.co).setMatrixAt(i, d2.matrix); (out ? C.co : C.ox).setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0)); }); C.ox.instanceMatrix.needsUpdate = true; C.co.instanceMatrix.needsUpdate = true; }
+    for (const k in this.V) this.V[k].layers.forEach(m => { m.material.emissive = m.material.emissive || new THREE.Color(0); m.material.emissive.setHex(this.sel === k && !this.test ? 0x225577 : 0x000000); });
+  },
+  tap(pid) { if (this.test) return; if (VESS[pid]) { this.sel = pid === this.sel ? null : pid; UI.render(); } },
+  act(k, v) {
+    if (k === 'sel') this.tap(v); else if (k === 'pulm') { this.pulm = !this.pulm; this.setColors(); UI.render(); }
+    else if (k === 'test') this.startTest(); else if (k === 'ans') this.answer(v); else if (k === 'tnext') this.nextTest(); else if (k === 'tend') { this.test = null; this.show(); camGo(this.cam); UI.render(); }
+    else if (k === 'look') { const y = { artery: 8.5, vein: 0, cap: -8.5 }[v]; camGo({ t: [0, y, 0], d: 15, yaw: .35, pitch: .22 }); }
+    else if (k === 'reset') camGo(this.cam);
+  },
+  startTest(n) { this.test = { n: n || 10, i: 0, s: 0, order: shuffle(Array.from({ length: n || 10 }, (_, i) => VT[i % 3][0])), done: false, ans: null }; this.nextTest(true); },
+  nextTest(first) { const t = this.test; if (!first) t.i++; if (t.i >= t.n) { t.done = true; t.cur = null; Acts.mark('C', t.s + '/' + t.n, t.s); this.show(); UI.render(); return; } t.cur = t.order[t.i]; t.ans = null; t.flip = Math.random() < .5; this.show(); this.V[t.cur].g.rotation.set(0, 0, 0); camGo({ t: [0, 0, 0], d: 16, yaw: .4, pitch: .25 }); UI.render(); },
+  answer(a) { const t = this.test; if (!t || t.ans) return; t.ans = a; const ok = a === t.cur; if (ok) t.s++; UI.render(); },
+  panel() {
+    const t = this.test;
+    if (t) {
+      if (t.done) return `<div class="kick">Activity C · Artery, Vein or Capillary?</div><h3>Finished! ${t.s} / ${t.n}</h3><p>${t.s >= 9 ? '🏆 Superb! You can tell the vessels apart.' : t.s >= 6 ? '🌟 Good work. Look again at the walls and the valves.' : '🌱 A good start. Use the Explore mode to compare the three models, then try again.'}</p><div class="row">${btn('test', '🔁 Play again', 'pri')}${btn('tend', '◀ Back to vessels')}</div>`;
+      const c = t.cur, hint = 'Look at the wall thickness, the valves and how big the cells look compared with the tube.';
+      const fb = t.ans ? `<div class="fb ${t.ans === c ? 'ok' : 'no'}"><b>${t.ans === c ? 'Correct!' : 'Not quite.'}</b> This is a <b>${VESS[c].n.toLowerCase()}</b>. ${VESS[c].t}<div style="margin-top:8px">${btn('tnext', t.i + 1 >= t.n ? 'See my score' : 'Next ▶', 'pri')}</div></div>` : '';
+      return `<div class="kick">Activity C · Round ${t.i + 1} of ${t.n} · ⭐ ${t.s}</div><h3>Which vessel is this?</h3><p>${hint}</p><div class="row">${VT.map(v => btn('ans:' + v[0], v[1], 'pri' + (t.ans ? ' ' + (v[0] === c ? 'ok' : v[0] === t.ans ? 'no' : '') : ''), t.ans ? 'disabled' : '')).join('')}</div><div aria-live="polite">${fb}</div>${btn('tend', '✕ Stop', 'sm')}`;
+    }
+    const s = this.sel, V = s && VESS[s];
+    return `<div class="kick">Blood Vessels Explorer</div><h3>Arteries, veins and capillaries</h3>
+    <p>Blood vessels are named by the <b>direction of flow</b> relative to the heart, <b>not</b> by how much oxygen the blood carries. <b>Tap a vessel</b> or choose one.</p>
+    <div class="row">${VT.map(v => btn('sel:' + v[0], v[1], 'sm' + (this.sel === v[0] ? ' on' : ''))).join('')}${btn('pulm', this.pulm ? '🫁 Pulmonary example' : '🧍 Systemic example', 'sm')}</div>
+    ${V ? `<div class="box fact"><b>${V.n}</b><br>${V.dir}.<p style="margin:.4em 0">${V.t}</p><small><b>Examples:</b> ${V.ex}</small><div class="row" style="margin-top:6px">${btn('look:' + s, '🔍 Look closer', 'sm')}${btn('reset', '⌖ All three', 'sm')}</div></div>` : `<table class="rt"><tr><th></th><th>Artery</th><th>Vein</th><th>Capillary</th></tr><tr><td>Direction</td><td>Away from heart</td><td>Towards heart</td><td>Joins the two</td></tr><tr><td>Wall</td><td>Thick, elastic</td><td>Thinner</td><td>One cell thick</td></tr><tr><td>Valves</td><td>No</td><td>Many veins</td><td>No</td></tr><tr><td>Job</td><td>Carry blood out</td><td>Return blood</td><td>Exchange</td></tr></table>`}
+    <div class="box nt"><b>Oxygen colours: </b>${this.pulm ? 'In the <b>pulmonary</b> circulation the <b>artery</b> carries relatively <b>low</b>-oxygen blood (🔵) and the <b>vein</b> carries relatively <b>high</b>-oxygen blood (🔴).' : 'In the <b>systemic</b> circulation arteries usually carry relatively <b>high</b>-oxygen blood (🔴) and veins relatively <b>low</b>-oxygen blood (🔵).'} Press the button to switch. The models are magnified and simplified, and not to scale.</div>
+    <div class="row">${btn('test', '🎯 Activity C: test yourself', 'pri')}</div>`;
+  }
+};
+
+/* ---------- WHAT'S INSIDE BLOOD ---------- */
+const BL = {
+  rbc: { n: 'Red blood cells', t: 'Disc-shaped cells with a dip in the middle. They are packed with <b>haemoglobin</b>, a protein that picks up oxygen in the lungs and releases it in the tissues. Haemoglobin is also what makes blood look red. They are by far the <b>most numerous</b> blood cells: roughly 4 to 6 million in every microlitre of blood.', k: 'Carry oxygen' },
+  wbc: { n: 'White blood cells', t: 'Larger cells that help <b>defend</b> the body against germs and clear away damaged cells. There are several kinds. They are much <b>fewer</b> than red cells: roughly 4,000 to 11,000 per microlitre.', k: 'Defend the body' },
+  plt: { n: 'Platelets', t: 'Tiny cell fragments that gather at a cut and help form a <b>clot</b> to seal it. They are the <b>smallest</b> of the three, with roughly 150,000 to 400,000 per microlitre.', k: 'Help blood clot' },
+  plasma: { n: 'Plasma', t: 'The pale-yellow <b>liquid</b> part of blood, about <b>half</b> of its volume (a little over 50%). It is mostly water and carries dissolved nutrients, salts, hormones, proteins and wastes, as well as the blood cells.', k: 'The liquid carrier' }
+};
+Stage.list.blood = {
+  cam: { t: [0, 0, 0], d: 46, yaw: .2, pitch: .15 }, heart: false, sel: null, rich: true, min: 6,
+  enter() {
+    const G = Stage.G; HEART.g.visible = false; this.sel = null; this.rich = true; const R = 6, L = 30;
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(R, R, L, 40, 1, true), new THREE.MeshStandardMaterial({ color: 0xffd88a, transparent: true, opacity: .13, side: THREE.DoubleSide, roughness: .3, depthWrite: false })); tube.rotation.z = Math.PI / 2; tube.userData.pid = 'plasma'; G.add(tube); Stage.addPick(tube); this.tube = tube;
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(R + .02, R + .02, L, 40, 1, true), rimMat(0xffd88a, .9)); rim.rotation.z = Math.PI / 2; G.add(rim);
+    this.rbc = new THREE.InstancedMesh(biconcave(1.15, .7), new THREE.MeshStandardMaterial({ color: 0xff3347, roughness: .45, emissive: 0x330008, transparent: true }), 70); this.rbc.userData.pid = 'rbc'; G.add(this.rbc); Stage.addPick(this.rbc);
+    this.plt = new THREE.InstancedMesh(new THREE.SphereGeometry(.42, 12, 8), new THREE.MeshStandardMaterial({ color: 0xe8a6ff, roughness: .4, transparent: true }), 28); this.plt.userData.pid = 'plt'; G.add(this.plt); Stage.addPick(this.plt);
+    const cell = (n, R0) => { const a = []; for (let i = 0; i < n; i++) a.push({ u: rnd(), y: (rnd() - .5) * 2 * R0, z: (rnd() - .5) * 2 * R0, r: [rnd() * 6, rnd() * 6, rnd() * 6], s: .6 + rnd() * .8 }); return a; };
+    this.cR = cell(70, 4.4).map(c => { while (c.y * c.y + c.z * c.z > 25) { c.y *= .8; c.z *= .8; } return c; }); this.cP = cell(28, 4.8).map(c => { while (c.y * c.y + c.z * c.z > 29) { c.y *= .8; c.z *= .8; } return c; });
+    this.wbc = []; for (let i = 0; i < 4; i++) {
+      const g = new THREE.Group(), body = new THREE.Mesh(new THREE.SphereGeometry(2, 24, 16), new THREE.MeshStandardMaterial({ color: i % 2 ? 0xf1f1ff : 0xdce7ff, transparent: true, opacity: .75, roughness: .5 })); body.userData.pid = 'wbc'; g.add(body); Stage.addPick(body);
+      for (let k = 0; k < 3; k++) { const n = new THREE.Mesh(new THREE.SphereGeometry(.85, 12, 10), new THREE.MeshStandardMaterial({ color: 0x7550c8, roughness: .5 })); n.position.set((k - 1) * .9, Math.sin(k * 2) * .4, (k % 2 - .5) * .6); n.userData.pid = 'wbc'; g.add(n); Stage.addPick(n); } g.userData = { u: rnd(), y: (rnd() - .5) * 5, z: (rnd() - .5) * 4 }; G.add(g); this.wbc.push(g);
+    }
+    const n = 360, pp = new Float32Array(n * 3); for (let i = 0; i < n; i++) { const a = rnd() * 6.28, r = Math.sqrt(rnd()) * 5.6; pp[i * 3] = (rnd() - .5) * L; pp[i * 3 + 1] = Math.cos(a) * r; pp[i * 3 + 2] = Math.sin(a) * r; }
+    const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pp, 3)); this.pl = new THREE.Points(pg, new THREE.PointsMaterial({ size: .22, color: 0xfff0c0, map: glowTex('rgba(255,240,190,1)', 'rgba(255,220,150,.4)'), transparent: true, opacity: .7, blending: THREE.AdditiveBlending, depthWrite: false })); G.add(this.pl);
+    this.d = new THREE.Object3D(); this.L = L; this.hl();
+  },
+  exit() { HEART.g.visible = true; },
+  hl() {
+    const s = this.sel, f = k => !s || s === k ? 1 : .2;
+    this.rbc.material.opacity = f('rbc'); this.plt.material.opacity = f('plt'); this.wbc.forEach(g => g.children.forEach(m => { m.material.opacity = m.geometry.parameters.radius > 1.5 ? .75 * f('wbc') : f('wbc'); m.material.transparent = true; }));
+    this.tube.material.opacity = s === 'plasma' ? .3 : .13; this.pl.material.opacity = s === 'plasma' ? 1 : s ? .25 : .7;
+    const c = this.rich ? 0xff3347 : 0x8a1634; this.rbc.material.color.setHex(c); this.rbc.material.emissive.setHex(this.rich ? 0x330008 : 0x14000a);
+  },
+  update(dt) {
+    const d = this.d, L = this.L, T = performance.now() / 1000, sp = dt * .018 * FLOW.speed * (HB.paused ? 0 : 1);
+    this.cR.forEach((c, i) => { c.u = (c.u + sp * 1) % 1; d.position.set(c.u * L - L / 2, c.y, c.z); d.rotation.set(c.r[0] + T * .5 * c.s, c.r[1] + T * .35, c.r[2]); d.scale.setScalar(1); d.updateMatrix(); this.rbc.setMatrixAt(i, d.matrix); }); this.rbc.instanceMatrix.needsUpdate = true;
+    this.cP.forEach((c, i) => { c.u = (c.u + sp * 1.2) % 1; d.position.set(c.u * L - L / 2, c.y, c.z); d.rotation.set(c.r[0] + T, c.r[1], c.r[2]); d.scale.set(1.2, .5, 1.2); d.updateMatrix(); this.plt.setMatrixAt(i, d.matrix); }); this.plt.instanceMatrix.needsUpdate = true;
+    this.wbc.forEach(g => { const q = g.userData; q.u = (q.u + sp * .8) % 1; g.position.set(q.u * L - L / 2, q.y, q.z); g.rotation.y += dt * .3; });
+    this.pl.rotation.x += dt * .02;
+  },
+  tap(pid) { if (BL[pid]) { this.sel = this.sel === pid ? null : pid; this.hl(); UI.render(); } else if (!pid) { this.sel = null; this.hl(); UI.render(); } },
+  act(k, v) { if (k === 'sel') this.tap(v); else if (k === 'rich') { this.rich = !this.rich; this.hl(); UI.render(); } },
+  labelOn() { return true; },
+  panel() {
+    const s = this.sel, B = s && BL[s];
+    return `<div class="kick">What’s Inside Blood?</div><h3>Blood is a mixture</h3>
+    <p>Blood is made of <b>plasma</b> (a liquid) carrying three kinds of cell fragments. They are <b>not equal</b> in size or number. Tap one to highlight it.</p>
+    <div class="row">${Object.keys(BL).map(k => btn('sel:' + k, BL[k].n, 'sm' + (s === k ? ' on' : ''))).join('')}</div>
+    ${B ? `<div class="box fact"><b>${B.n}</b> <span class="pill">${B.k}</span><p style="margin:.4em 0">${B.t}</p></div>` : `<table class="rt"><tr><th>Part</th><th>Job</th><th>Number</th></tr><tr><td>Plasma</td><td>Liquid carrier</td><td>–</td></tr><tr><td>Red cells</td><td>Carry oxygen</td><td>Most</td></tr><tr><td>Platelets</td><td>Clotting</td><td>Fewer</td></tr><tr><td>White cells</td><td>Defence</td><td>Fewest</td></tr></table>`}
+    <div class="row">${btn('rich', this.rich ? '🔴 Oxygen-rich cells (bright)' : '🔴 Oxygen-poor cells (darker)', 'sm')}</div>
+    <div class="box an"><b>Haemoglobin:</b> each red blood cell carries millions of haemoglobin molecules. In the lungs they pick up oxygen and the cell looks a brighter red. In the tissues they release oxygen. Press the button to compare.</div>
+    <div class="box nt"><b>Not to scale: </b>this picture magnifies the cells and shows far fewer of them than are really there. Real blood contains millions of red cells in a tiny drop.</div>`;
+  }
+};
+
+/* ---------- HEARTBEAT SIMULATOR ---------- */
+const BEAT = { rest: { n: 'Resting', bpm: 75, br: 15, t: 'At rest the body needs a moderate supply of oxygen, so the heart beats at a steady rate.' }, walk: { n: 'Walking', bpm: 100, br: 22, t: 'Muscles need more oxygen, so the heart beats faster and breathing gets deeper and quicker.' }, run: { n: 'Running', bpm: 150, br: 38, t: 'Working muscles need much more oxygen and must clear more carbon dioxide, so the heart rate and breathing rate rise a lot.' }, rec: { n: 'Recovering', bpm: 75, br: 15, t: 'After activity the heart rate does not drop instantly. It slows gradually back towards the resting rate.' } };
+Stage.list.beat = {
+  cam: { t: [0, .4, 0], d: 32, yaw: 0, pitch: .12 }, state: 'rest', target: 75, rec: 0, ring: [], gt: 0, tm: 0, br: 15, lp: 0, body: true,
+  enter() { this.state = 'rest'; this.target = 75; HB.bpm = 75; this.ring = []; this.br = 15; this.lp = 0; },
+  exit() { HEART.lungs.scale.setScalar(1); },
+  set(s) { this.state = s; if (s === 'rec') { this.rec = 0; this.recFrom = HB.bpm; this.target = 75; } else this.target = BEAT[s].bpm; UI.render(); },
+  update(dt, raw) {
+    if (this.state === 'rec') { this.rec += dt; this.target = 75 + (this.recFrom - 75) * Math.exp(-this.rec / 7); }
+    const df = this.target - HB.bpm; HB.bpm += clamp(df, -dt * 18, dt * 22); const brT = this.state === 'rec' ? 15 + (HB.bpm - 75) / 75 * 23 : BEAT[this.state].br; this.br += (brT - this.br) * Math.min(1, dt * 1.2);
+    this.lp += dt * this.br / 60 * 6.283 * .6; HEART.lungs.scale.setScalar(1 + .025 * Math.sin(this.lp)); FLOW.speed = 1;
+    const s = beatState(HB.phase); this.ring.push(s.v * .85 + s.a * .22); if (this.ring.length > 220) this.ring.shift();
+    this.tm += raw; if (this.tm > .1) { this.tm = 0; const e = $('#bpmV'); if (e) { e.textContent = Math.round(HB.bpm); $('#brV').textContent = Math.round(this.br); this.draw(); } }
+  },
+  draw() {
+    const c = $('#pulseC'); if (!c) return; const g = c.getContext('2d'), w = c.width, h = c.height; g.clearRect(0, 0, w, h); g.fillStyle = '#071230'; g.fillRect(0, 0, w, h); g.strokeStyle = '#ff5a6e'; g.lineWidth = 2.5; g.beginPath();
+    const n = this.ring.length; this.ring.forEach((v, i) => { const x = w - (n - i) * w / 220, y = h - 8 - v * (h - 18); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  },
+  act(k, v) { if (k === 'st') this.set(v); else if (k === 'reset') { this.state = 'rest'; this.target = 75; HB.bpm = 75; UI.render(); } else if (k === 'work') Work.open(); },
+  labelOn() { return false; },
+  panel() {
+    const B = BEAT[this.state];
+    return `<div class="kick">Heartbeat Simulator</div><h3>${B.n}</h3>
+    <p>Choose a pretend activity and watch how the heart and breathing respond. You do <b>not</b> need to move: this is only a model.</p>
+    <div class="row">${['rest', 'walk', 'run', 'rec'].map(k => btn('st:' + k, BEAT[k].n, 'sm' + (this.state === k ? ' on' : ''))).join('')}${btn('reset', '↺ Reset', 'sm')}</div>
+    <div class="cols3" style="display:flex;gap:10px;text-align:center"><div class="box" style="flex:1"><div class="big" id="bpmV">75</div><small>heartbeats per minute (illustrative)</small></div><div class="box" style="flex:1"><div class="big" id="brV">15</div><small>breaths per minute (illustrative)</small></div></div>
+    <canvas id="pulseC" class="lab" width="300" height="80" style="width:100%;border-radius:10px" role="img" aria-label="Pulse graph: a line that rises with each heartbeat"></canvas>
+    <p>${B.t}</p>
+    <div class="box an"><b>Why?</b> Active muscles use more oxygen. A faster heartbeat plus faster breathing delivers more oxygen and removes more carbon dioxide. The animation is slowed down so you can watch each beat.</div>
+    <div class="box nt"><b>Illustrative numbers only. </b>Heart rate varies with age, fitness, fitness level, stress, sleep and more. These values are examples, not targets, and this app cannot measure or diagnose anything. Ask a doctor about your own health.</div>
+    <div class="row">${btn('work', '💪 Your Heart at Work', 'pri')}</div>`;
+  }
+};
+const Work = {
+  open() {
+    Modal.open('💪 Your Heart at Work', `<div class="cols"><div><h3>Why does the heart never stop?</h3><p>Every cell needs a steady supply of oxygen and nutrients, and cells cannot store much. So the heart pumps <b>all day and all night</b>, beating roughly 100,000 times a day on average.</p>
+    <h3>Breathing and circulation</h3><p>Breathing brings oxygen into the lungs. The <b>pulmonary circulation</b> carries it into the blood, and the <b>systemic circulation</b> delivers it to the body. The two systems work as a team.</p>
+    <h3>When we exercise</h3><p>Muscles use more oxygen, so the heart beats faster and breathing speeds up. Afterwards both slow down again.</p></div>
+    <div><h3>What blood delivers</h3><ul><li><b>Oxygen</b> from the lungs to all cells.</li><li><b>Nutrients</b> from digested food.</li><li><b>Hormones</b> and <b>defence cells</b>.</li></ul><h3>What blood removes</h3><ul><li><b>Carbon dioxide</b>, breathed out through the lungs.</li><li>Other <b>wastes</b>, filtered by organs such as the kidneys.</li></ul>
+    <h3>Healthy habits</h3><ul><li>🏃 Be <b>active</b> every day in ways that suit you.</li><li>😴 Get enough <b>sleep</b>.</li><li>🥗 Eat a <b>balanced diet</b> with plenty of fruit and vegetables.</li><li>🚭 Stay away from smoking.</li></ul></div></div>
+    <div class="box nt"><b>Note: </b>this is general learning information for students, not medical advice. If you have questions about your own health, talk to a doctor or another trusted adult.</div>`, 'work');
+  }
+};
+
+/* =====================================================================
+   UI: navigation, panel, modal
+   ===================================================================== */
+const NAV = [
+  ['title', '🏠', 'Home'], ['explore', '🫀', 'Explore the Heart'], ['journey', '🩸', 'Follow the Blood'], ['chambers', '🏛️', 'Four Chambers'], ['valves', '🚪', 'Heart Valves'], ['pulm', '🫁', 'Pulmonary Circulation'], ['syst', '🧍', 'Systemic Circulation'],
+  ['vessels', '🧬', 'Blood Vessels'], ['blood', '🔬', 'What’s Inside Blood?'], ['beat', '💓', 'Heartbeat Simulator'], ['act', '🎯', 'Activities'], ['quiz', '❓', 'Quiz'], ['gloss', '📖', 'Glossary'], ['help', 'ℹ️', 'Help']
+];
+const MODALS = ['act', 'quiz', 'gloss', 'help'];
+const UI = {
+  panel: null,
+  setPanel(html, show) { const p = this.panel, sc = p.scrollTop, same = p.dataset.k === W.mode; p.innerHTML = '<button class="pmin" aria-label="Minimise or expand this panel">▾</button>' + html; p.dataset.k = W.mode; if (!same) p.classList.remove('min'); p.classList.toggle('show', show !== false); p.scrollTop = same ? sc : 0; this.bindPanel(); applyViewOffset(); },
+  bindPanel() {
+    const p = this.panel; $('.pmin', p).onclick = () => { p.classList.toggle('min'); applyViewOffset(); };
+    $$('[data-act]', p).forEach(b => b.onclick = () => this.act(b.dataset.act, b));
+    $$('[data-in]', p).forEach(b => b.oninput = () => this.input(b.dataset.in, +b.value, b));
+  },
+  render() {
+    const s = Stage.cur; if (!s) return; const h = s.panel ? s.panel() : '';
+    if (!h) { this.panel.classList.remove('show'); applyViewOffset(); } else this.setPanel(h);
+    if (s.afterRender) s.afterRender();
+  },
+  navMark(k) { $$('.nb').forEach(b => b.classList.toggle('on', b.dataset.k === k)); },
+  go(k) {
+    if (MODALS.includes(k)) { Modal.openKind(k); return; }
+    Modal.close(true);
+    if (NO3D.v) { $('#title').classList.toggle('gone', k !== 'title'); document.body.classList.toggle('is-title', k === 'title'); if (k !== 'title') { $('#top').style.visibility = 'visible'; this.setPanel('<h3>3D view not available</h3><p>Your device could not start the 3D scene. The <b>Activities</b>, <b>Quiz</b>, <b>Glossary</b> and <b>Help</b> sections still work from the menu below.</p>'); } return; }
+    const t = k === 'title';
+    $('#title').classList.toggle('gone', !t); document.body.classList.toggle('is-title', t); $('#top').style.visibility = t ? 'hidden' : 'visible';
+    $('#backBtn').style.display = t ? 'none' : 'inline-block'; document.body.classList.toggle('has-back', !t);
+    const sb = $('#stagebar'); sb.classList.remove('show'); document.documentElement.style.setProperty('--stageh', '0px'); this.panel.classList.remove('show');
+    Stage.enter(k); this.navMark(k); this.render();
+    this.renderStageBar();
+    if (t) this.panel.classList.remove('show');
+    applyViewOffset(); store.set('last', k);
+  },
+  renderStageBar() {
+    const sb = $('#stagebar'), s = Stage.cur; if (!s || !s.bar) { sb.classList.remove('show'); document.documentElement.style.setProperty('--stageh', '0px'); return; }
+    sb.innerHTML = `<div class="chips" role="tablist" aria-label="Stages">${s.bar().map((u, i) => `<button class="sc" role="tab" data-act="go:${i}" aria-label="Stage ${i + 1}: ${u.n}"><span>${u.ico}</span><span class="n">${u.n}</span></button>`).join('')}</div>`;
+    sb.classList.add('show'); $$('[data-act]', sb).forEach(b => b.onclick = () => this.act(b.dataset.act, b)); this.markBar();
+    requestAnimationFrame(() => { document.documentElement.style.setProperty('--stageh', (sb.offsetHeight + 12) + 'px'); applyViewOffset(); });
+  },
+  markBar() { const s = Stage.cur; $$('#stagebar .sc').forEach((b, k) => { b.classList.toggle('on', !!(s && s.barOn && s.barOn(k))); b.classList.toggle('done', !!(s && s.i > k)); if (s && s.barOn && s.barOn(k) && b.scrollIntoView) { const c = b.parentNode; c.scrollLeft = b.offsetLeft - c.clientWidth / 2 + b.clientWidth / 2; } }); },
+  act(a, el) {
+    const i = a.indexOf(':'), k = i < 0 ? a : a.slice(0, i), v = i < 0 ? '' : a.slice(i + 1), s = Stage.cur;
+    if (s && s.act) s.act(k, v, el);
+  },
+  input(k, v, el) { const s = Stage.cur; if (s && s.input) s.input(k, v, el); },
+  syncPause() { const b = $('#pauseBtn'); b.textContent = W.paused ? '▶' : '⏸'; b.classList.toggle('on', W.paused); b.setAttribute('aria-label', W.paused ? 'Resume animation' : 'Pause animation'); }
+};
+
+const Modal = {
+  el: null, raf: 0, kind: null,
+  open(title, html, kind) {
+    this.close(true); this.el = $('#modal'); this.kind = kind; W.modalOpen = true;
+    this.el.innerHTML = `<div class="sheet" role="document"><header><h2 id="mTitle">${title}</h2><button class="tb" id="mClose" aria-label="Close and go back">✕</button></header><div class="body" id="mBody">${html}</div></div>`;
+    this.el.classList.add('open'); this.el.setAttribute('aria-labelledby', 'mTitle');
+    $('#mClose').onclick = () => this.close(); this.el.onclick = e => { if (e.target === this.el) this.close(); };
+    $('#mClose').focus(); UI.navMark(kind); return $('#mBody');
+  },
+  close(silent) {
+    cancelAnimationFrame(this.raf); this.raf = 0; const m = $('#modal'); if (!m.classList.contains('open')) return;
+    m.classList.remove('open'); m.innerHTML = ''; W.modalOpen = false; this.kind = null;
+    if (!silent) { UI.navMark(W.mode); const c = $('#gl'); c && c.focus && c.focus({ preventScroll: true }); }
+  },
+  loop(fn) { let last = performance.now(); const f = now => { const dt = Math.min(.05, (now - last) / 1000); last = now; fn(dt, now / 1000); this.raf = requestAnimationFrame(f); }; this.raf = requestAnimationFrame(f); },
+  openKind(k) { if (k === 'act') Acts.open(); else if (k === 'quiz') Quiz.open(); else if (k === 'gloss') Glossary.open(); else if (k === 'help') Help.open(); }
+};
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (W.present) togglePresent(false); else if ($('#modal').classList.contains('open')) Modal.close(); else $('#settings').classList.remove('open'); }
+  if (e.key === 'Tab' && $('#modal').classList.contains('open')) {
+    const f = $$('#modal button,#modal input,#modal select,#modal summary,#modal [tabindex="0"]').filter(x => !x.disabled && x.offsetParent !== null); if (!f.length) return;
+    const a = f[0], b = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); b.focus(); } else if (!e.shiftKey && document.activeElement === b) { e.preventDefault(); a.focus(); }
+  }
+});
+
+const PWA = {
+  ev: null, reg: null, standalone: false,
+  init() {
+    this.standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); this.ev = e; $('#installBtn').style.display = this.standalone ? 'none' : 'inline-block'; this.refresh(); });
+    window.addEventListener('appinstalled', () => { this.ev = null; this.standalone = true; $('#installBtn').style.display = 'none'; toast('The app was installed. You can open it from your home screen or app list.'); this.refresh(); });
+    $('#installBtn').onclick = () => this.install();
+    const net = () => { const on = navigator.onLine; const c = $('#netChip'); c.classList.toggle('off', !on); c.lastChild.textContent = on ? 'Online' : 'Offline – using saved files'; this.refresh(); }; window.addEventListener('online', net); window.addEventListener('offline', net); net();
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      navigator.serviceWorker.register('service-worker.js').then(r => {
+        this.reg = r; this.swState = 'registered';
+        const watch = w => w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) toast('A new version is ready.', 'Refresh', () => { w.postMessage('SKIP_WAITING'); }, 0); });
+        if (r.waiting && navigator.serviceWorker.controller) toast('A new version is ready.', 'Refresh', () => r.waiting.postMessage('SKIP_WAITING'), 0);
+        r.addEventListener('updatefound', () => watch(r.installing));
+        navigator.serviceWorker.ready.then(() => { this.swState = 'ready'; this.refresh(); });
+      }).catch(err => { this.swState = 'failed'; this.swErr = err && err.message; this.refresh(); });
+      let rl = false; navigator.serviceWorker.addEventListener('controllerchange', () => { if (rl) return; rl = true; location.reload(); });
+    } else { this.swState = location.protocol === 'file:' ? 'file' : 'unsupported'; }
+  },
+  async install() {
+    if (this.ev) { this.ev.prompt(); const r = await this.ev.userChoice; if (r.outcome !== 'accepted') toast('Installation cancelled. You can try again any time.'); this.ev = null; $('#installBtn').style.display = 'none'; this.refresh(); }
+    else Help.open('install');
+  },
+  status() {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let inst, off;
+    if (this.standalone) inst = '✔ Installed – you are using the installed app.'; else if (this.ev) inst = '✔ Installation is available. Use the “Install App” button.';
+    else if (ios) inst = 'ℹ In Safari tap the Share button, then “Add to Home Screen”.'; else if (location.protocol === 'file:') inst = '✖ Not available when the file is opened directly (file://). Host it on HTTPS or use localhost.'; else inst = 'ℹ Not offered right now. Use your browser menu (“Install app” or “Add to Home screen”) if it appears there.';
+    off = this.swState === 'ready' ? '✔ Saved for offline use. The app will open without internet.' : this.swState === 'registered' ? '… Saving files for offline use…' : this.swState === 'failed' ? '✖ Offline saving failed: ' + esc(this.swErr || 'unknown error') : this.swState === 'file' ? '✖ Offline saving needs HTTPS or localhost (not file://).' : '✖ This browser or address does not support offline saving.';
+    return [inst, off];
+  },
+  refresh() { const e = $('#pwaStat'); if (e) { const s = this.status(); e.innerHTML = `<div class="box ${this.standalone || this.ev ? 'fact' : 'nt'}"><b>Install: </b>${s[0]}</div><div class="box ${this.swState === 'ready' ? 'fact' : 'nt'}"><b>Offline: </b>${s[1]}</div><div class="box"><b>Connection: </b>${navigator.onLine ? 'Online' : 'Offline'}</div>${this.ev ? '<button class="btn pri" id="hInst">⬇ Install App</button>' : ''}`; const b = $('#hInst'); if (b) b.onclick = () => this.install(); } }
+};
+
+const Help = {
+  open(focus) {
+    Modal.open('ℹ️ Help & About', `<div class="cols"><div>
+      <h3>How to use the app</h3>
+      <ul><li><b>Turn the view:</b> drag the 3D scene with a finger or mouse. <b>Zoom:</b> pinch, scroll, or use ＋ / － (arrow keys and + / − work when the 3D view is selected).</li><li><b>Learn about a part:</b> tap a chamber, valve or vessel, or choose it from the panel.</li><li><b>Reset camera:</b> ⌖. <b>Pause:</b> ⏸ or the Space key. <b>Labels:</b> 🏷. <b>Settings:</b> ⚙ (speed and graphics).</li><li><b>Presentation mode:</b> 📽 for teaching a class: bigger text and full screen. Press Esc to leave.</li><li><b>Panel too big?</b> Tap the ▾ at its corner to shrink it.</li></ul>
+      <h3>The menu</h3>
+      <ul><li><b>Explore the Heart</b> – rotate, cutaway, fact cards.</li><li><b>Follow the Blood</b> – a 15-stage journey of one blood cell.</li><li><b>Four Chambers</b> and <b>Heart Valves</b> – how the parts work together.</li><li><b>Pulmonary</b> and <b>Systemic Circulation</b> – the two loops.</li><li><b>Blood Vessels</b> and <b>What’s Inside Blood?</b></li><li><b>Heartbeat Simulator</b> – rest, walking, running, recovering.</li><li><b>Activities</b>, <b>Quiz</b> and <b>Glossary</b>.</li></ul>
+      <div class="box nt"><b>About accuracy: </b>The model is simplified for learning. Sizes are not to scale, blood takes many parallel routes in the body, and the heartbeat is slowed down so you can watch it. Blue and red show <i>relatively low</i> and <i>relatively high</i> oxygen. It is a teaching code, as real blood is always red. Heart-rate numbers are illustrative only. This app is not medical advice and cannot diagnose anything.</div>
+      <div class="box">If the 3D view does not start, your device may not support WebGL. Try turning on <b>Low graphics</b> in ⚙, or use a newer browser. The Activities, Quiz and Glossary still work. The app also works without sound.</div></div>
+      <div><h3>Install &amp; offline</h3><div id="pwaStat"></div>
+      <div class="box"><b>To use offline:</b> put the folder on an HTTPS website (or run it on localhost), open it once while online, and it keeps working without internet. Service workers only run on <b>HTTPS</b> or <b>localhost</b>. On Android Chrome: menu ⋮ → “Install app”. On iPhone/iPad Safari: Share → “Add to Home Screen”.</div>
+      <h3>Credits</h3><div class="box fact">Developed by <b>Mateen Yousuf, Teacher</b>.<br>Built with Three.js (included in the app, so no internet is needed). No accounts, no tracking, no backend.</div>
+      <div class="row"><button class="btn" id="hReset">Clear saved progress</button></div></div></div>`, 'help');
+    PWA.refresh(); $('#hReset').onclick = () => { try { Object.keys(localStorage).filter(k => k.startsWith('hc_')).forEach(k => localStorage.removeItem(k)); } catch (e) { } Acts.done = {}; toast('Saved progress cleared.'); };
+    if (focus === 'install') $('#pwaStat').scrollIntoView();
+  }
+};
+
+/* =====================================================================
+   ACTIVITIES A–D
+   ===================================================================== */
+const ARR = [
+  ['Vena cava (superior or inferior)', 'Oxygen-poor blood returns from the body in the big veins, the venae cavae.'],
+  ['Right atrium', 'The venae cavae empty into the right atrium.'],
+  ['Tricuspid valve', 'Blood passes from the right atrium to the right ventricle through the tricuspid valve.'],
+  ['Right ventricle', 'The right ventricle receives the blood and will pump it to the lungs.'],
+  ['Pulmonary valve', 'The pulmonary valve guards the exit of the right ventricle.'],
+  ['Pulmonary arteries', 'Beyond the pulmonary valve, the pulmonary arteries carry blood away to the lungs.'],
+  ['Lungs', 'In the lungs the blood picks up oxygen and gives up carbon dioxide.'],
+  ['Pulmonary veins', 'The pulmonary veins bring oxygen-rich blood back towards the heart.'],
+  ['Left atrium', 'The pulmonary veins empty into the left atrium.'],
+  ['Mitral valve', 'Blood passes from the left atrium to the left ventricle through the mitral valve.'],
+  ['Left ventricle', 'The left ventricle receives the blood and will pump it to the whole body.'],
+  ['Aortic valve', 'The aortic valve guards the exit of the left ventricle.'],
+  ['Aorta', 'Beyond the aortic valve, the aorta carries oxygen-rich blood to the body.']
+];
+/* Red or Blue items: [name, part id for schematic, 'low'|'high', explanation] */
+const RB = [
+  ['Superior vena cava', 'svc', 'low', 'It carries blood returning from the head and arms, which has given up oxygen to the tissues.'],
+  ['Inferior vena cava', 'ivc', 'low', 'It returns blood from the lower body, which has given up oxygen to the tissues.'],
+  ['Right atrium', 'ra', 'low', 'The right atrium receives oxygen-poor blood from the body.'],
+  ['Right ventricle', 'rv', 'low', 'It pumps oxygen-poor blood to the lungs.'],
+  ['Pulmonary arteries', 'pa', 'low', 'They carry blood from the heart to the lungs. It is relatively low in oxygen. This is the exception to “arteries = red”.'],
+  ['Pulmonary veins', 'pv', 'high', 'They carry blood from the lungs, which has just picked up oxygen. This is the exception to “veins = blue”.'],
+  ['Left atrium', 'la', 'high', 'The left atrium receives oxygen-rich blood from the lungs.'],
+  ['Left ventricle', 'lv', 'high', 'It pumps oxygen-rich blood to the whole body.'],
+  ['Aorta', 'aorta', 'high', 'The aorta carries oxygen-rich blood away from the left ventricle.'],
+  ['The veins that return blood to the heart from the body (systemic veins)', 'ivc', 'low', 'After delivering oxygen to the tissues, the blood in systemic veins has relatively low oxygen.'],
+  ['The body’s arteries leaving the aorta (systemic arteries)', 'aorta', 'high', 'Systemic arteries carry oxygen-rich blood from the left side of the heart to the tissues.'],
+  ['Blood just after it leaves the lungs', 'pv', 'high', 'In the lungs blood picks up oxygen, so just after the lungs it is oxygen-rich.']
+];
+function schem(hl) {
+  const on = ids => ids.includes(hl), st = ids => on(ids) ? 'stroke="#35d4ff" stroke-width="5"' : 'stroke="#0b1a3a" stroke-width="2"';
+  return `<svg viewBox="0 0 320 220" style="width:100%;max-width:340px" role="img" aria-label="Simple diagram of the heart. Highlighted part: ${PARTS[hl] ? PARTS[hl].n : ''}">
+  <rect x="70" y="70" width="80" height="50" rx="14" fill="#5a82ff" ${st(['ra'])}/><rect x="170" y="70" width="80" height="50" rx="14" fill="#ff5266" ${st(['la'])}/>
+  <rect x="60" y="124" width="90" height="70" rx="18" fill="#4064d8" ${st(['rv'])}/><rect x="170" y="124" width="100" height="70" rx="18" fill="#e63248" ${st(['lv'])}/>
+  <rect x="82" y="14" width="18" height="56" rx="6" fill="#5a82ff" ${st(['svc'])}/><rect x="82" y="190" width="18" height="26" rx="6" fill="#5a82ff" ${st(['ivc'])}/>
+  <rect x="124" y="30" width="22" height="40" rx="6" fill="#5a82ff" ${st(['pa'])}/><rect x="176" y="30" width="22" height="40" rx="6" fill="#ff5266" ${st(['pv'])}/><rect x="226" y="14" width="22" height="56" rx="6" fill="#ff5266" ${st(['aorta'])}/>
+  <g font-size="12" font-weight="700" fill="#fff" text-anchor="middle"><text x="110" y="100">RA</text><text x="210" y="100">LA</text><text x="105" y="164">RV</text><text x="220" y="164">LV</text></g>
+  <text x="160" y="212" text-anchor="middle" font-size="10" fill="#bfe6ff">(simple diagram: not the real shape)</text></svg>`;
+}
+const Acts = {
+  done: store.get('acts', {}),
+  mark(k, t, score) { const o = this.done[k]; if (!o || score > (o.s || 0)) { this.done[k] = { t, s: score }; store.set('acts', this.done); } },
+  open() {
+    const L = [['A', '🩸', 'Arrange the Blood Pathway', 'Put the steps of the journey in the right order, from the vena cava to the aorta.'], ['B', '🔴', 'Red or Blue?', 'Decide if the blood in each part has relatively high or low oxygen.'], ['C', '🧬', 'Artery, Vein or Capillary?', 'Look at a 3D vessel and name it. 10 rounds.'], ['D', '❓', 'Quiz', 'Test yourself with 15 questions.']];
+    const b = Modal.open('🎯 Activities', `<p>Choose an activity. Your best results are saved on this device.</p><div class="cards">${L.map(a => `<div class="card click" tabindex="0" role="button" data-a="${a[0]}"><h4>${a[1]} ${a[0]}. ${a[2]}</h4><p>${a[3]}</p>${this.done[a[0]] ? `<span class="pill">Best: ${esc(this.done[a[0]].t)}</span>` : ''}</div>`).join('')}</div>`, 'act');
+    $$('.card', b).forEach(c => { const go = () => this['run' + c.dataset.a](); c.onclick = go; c.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }; });
+  },
+  back() { return `<button class="btn" id="aBack">◀ All activities</button>`; },
+  /* ---- A: arrange the pathway ---- */
+  runA() { this.A = { next: 0, mist: 0, pool: shuffle(ARR.map((_, i) => i)), placed: [], msg: '' }; this.stepA(); },
+  stepA() {
+    const a = this.A, fin = a.next >= ARR.length;
+    if (fin) { this.mark('A', a.mist + ' mistakes', 100 - a.mist); }
+    const tr = a.placed.map((i, n) => `<li><b>${ARR[i][0]}</b> <small>${ARR[i][1]}</small></li>`).join('');
+    const b = Modal.open('🩸 Arrange the Blood Pathway', `<p>Blood has just left the <b>body tissues</b> (oxygen-poor). <b>Tap the next stop</b> on its journey to the aorta. Mistakes so far: <b>${a.mist}</b></p>
+      <ol class="seq" style="text-align:left">${tr || '<li><small>Your path will appear here…</small></li>'}</ol>
+      <div id="aMsg" aria-live="polite">${a.msg}</div>
+      ${fin ? `<div style="text-align:center"><div style="font-size:60px">${a.mist === 0 ? '🏆' : a.mist < 5 ? '🌟' : '🩸'}</div><h3>Pathway complete – ${a.mist} mistake${a.mist === 1 ? '' : 's'}</h3><p>Then the blood reaches the body’s tissues, gives up oxygen, and the loop begins again.</p><div class="row" style="justify-content:center"><button class="btn pri" id="aAgain">🔁 Play again</button>${this.back()}</div></div>`
+        : `<div class="row">${a.pool.filter(i => !a.placed.includes(i)).map(i => `<button class="btn" data-i="${i}">${esc(ARR[i][0])}</button>`).join('')}</div>`}`, 'act');
+    if (fin) { $('#aAgain').onclick = () => this.runA(); $('#aBack').onclick = () => this.open(); return; }
+    $$('[data-i]', b).forEach(bt => bt.onclick = () => {
+      const i = +bt.dataset.i;
+      if (i === a.next) { a.placed.push(i); a.next++; a.msg = `<div class="fb ok"><b>Correct!</b> ${ARR[i][1]}</div>`; }
+      else { a.mist++; a.msg = `<div class="fb no"><b>Not yet.</b> “${esc(ARR[i][0])}” does not come next. After <b>${a.next ? ARR[a.next - 1][0] : 'the body tissues'}</b> the blood goes to <b>${ARR[a.next][0]}</b>. ${ARR[a.next][1]}</div>`; }
+      this.stepA();
+    });
+  },
+  /* ---- B: red or blue ---- */
+  runB() { this.B = { i: 0, s: 0, q: shuffle(RB.map((_, i) => i)).slice(0, 10) }; this.stepB(); },
+  stepB() {
+    const a = this.B;
+    if (a.i >= a.q.length) { this.mark('B', a.s + '/' + a.q.length, a.s); const b = Modal.open('🔴 Red or Blue?', `<div style="text-align:center"><div style="font-size:64px">${a.s >= 9 ? '🏆' : a.s >= 6 ? '🌟' : '🌱'}</div><h3>You scored ${a.s} / ${a.q.length}</h3><p>Remember: <b>arteries</b> carry blood <i>away</i> from the heart, <b>veins</b> carry it <i>towards</i> the heart. Oxygen content is a separate question. The pulmonary vessels are the exception to the “artery = red” and “vein = blue” rule.</p><div class="row" style="justify-content:center"><button class="btn pri" id="aAgain">🔁 Play again</button>${this.back()}</div></div>`, 'act'); $('#aAgain').onclick = () => this.runB(); $('#aBack').onclick = () => this.open(); return; }
+    const it = RB[a.q[a.i]];
+    const b = Modal.open('🔴 Red or Blue?', `<div class="lh" style="justify-content:space-between"><span class="pill">Round ${a.i + 1} of ${a.q.length}</span><span class="pill">⭐ ${a.s}</span></div><h3>Blood in the <b>${esc(it[0])}</b>: relatively high or low oxygen?</h3><div style="text-align:center">${schem(it[1])}</div>
+      <div class="row" style="justify-content:center"><button class="btn pri" data-p="low" style="background:#2549c7">🔵 Blue: relatively LOW oxygen</button><button class="btn pri" data-p="high" style="background:#c8203a">🔴 Red: relatively HIGH oxygen</button></div><div id="aFb" aria-live="polite"></div><p><small>Blue and red are a teaching code. Real blood is always red.</small></p>`, 'act');
+    $$('[data-p]', b).forEach(bt => bt.onclick = () => { const ok = bt.dataset.p === it[2]; if (ok) a.s++; $$('[data-p]', b).forEach(x => x.disabled = true); $('#aFb').innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><b>${ok ? 'Correct!' : 'Not quite.'}</b> The blood here has relatively <b>${it[2]}</b> oxygen. ${it[3]}<div style="margin-top:8px"><button class="btn pri" id="aNx">${a.i + 1 >= a.q.length ? 'See my score' : 'Next ▶'}</button></div></div>`; $('#aNx').onclick = () => { a.i++; this.stepB(); }; $('#aNx').focus(); });
+  },
+  /* ---- C: runs on the 3D vessels stage ---- */
+  runC() { Modal.close(true); UI.go('vessels'); Stage.cur.startTest(); },
+  runD() { Quiz.open(); }
+};
+
+const QUIZ = [
+  { q: 'How many chambers does the human heart have?', o: ['Two', 'Three', 'Four', 'Six'], a: 2, e: 'The heart has four chambers: two atria (upper) and two ventricles (lower).' },
+  { q: 'Which side of the heart pumps blood to the lungs?', o: ['The left side', 'The right side', 'Both sides equally to the lungs only', 'Neither side'], a: 1, e: 'The right ventricle pumps blood to the lungs through the pulmonary arteries.' },
+  { q: 'Which chamber pumps blood to the whole body?', o: ['Right atrium', 'Right ventricle', 'Left atrium', 'Left ventricle'], a: 3, e: 'The left ventricle pumps oxygen-rich blood into the aorta and around the body.' },
+  { q: 'Which valve lies between the right atrium and the right ventricle?', o: ['Mitral valve', 'Tricuspid valve', 'Aortic valve', 'Pulmonary valve'], a: 1, e: 'The tricuspid valve (three flaps) separates the right atrium from the right ventricle.' },
+  { q: 'Which valve lies between the left atrium and the left ventricle?', o: ['Mitral valve', 'Tricuspid valve', 'Pulmonary valve', 'Aortic valve'], a: 0, e: 'The mitral valve (two flaps) separates the left atrium from the left ventricle.' },
+  { q: 'What is the main job of heart valves?', o: ['To make blood red', 'To keep blood flowing one way', 'To store oxygen', 'To make the heart beat'], a: 1, e: 'Valves prevent blood from flowing backwards. They open and close because of pressure changes as the heart muscle contracts and relaxes.' },
+  { q: 'Which vessel carries blood away from the left ventricle?', o: ['Pulmonary vein', 'Vena cava', 'Aorta', 'Pulmonary artery'], a: 2, e: 'The aorta leaves the left ventricle and carries oxygen-rich blood to the body.' },
+  { q: 'The pulmonary arteries carry blood…', o: ['from the lungs to the heart', 'from the heart to the lungs', 'from the heart to the brain', 'from the legs to the heart'], a: 1, e: 'Arteries carry blood away from the heart. The pulmonary arteries carry it from the right ventricle to the lungs.' },
+  { q: 'Which statement about the pulmonary veins is correct?', o: ['They carry relatively low-oxygen blood to the lungs', 'They carry relatively high-oxygen blood from the lungs to the left atrium', 'They carry blood away from the heart', 'They carry blood from the body to the right atrium'], a: 1, e: 'The pulmonary veins carry blood from the lungs towards the heart (the left atrium), and that blood has relatively high oxygen.' },
+  { q: 'Which vessels bring blood from the body back to the right atrium?', o: ['The venae cavae', 'The pulmonary veins', 'The aorta', 'The pulmonary arteries'], a: 0, e: 'The superior and inferior venae cavae return oxygen-poor blood from the body to the right atrium.' },
+  { q: 'How are arteries and veins distinguished?', o: ['Arteries are always red and veins are always blue', 'By the direction of flow: arteries carry blood away from the heart and veins carry it towards the heart', 'Arteries are smaller than veins', 'By the oxygen they carry only'], a: 1, e: 'They are named by the direction of flow relative to the heart, not by oxygen content or colour.' },
+  { q: 'What is special about capillary walls?', o: ['They are very thick and muscular', 'They contain many valves', 'They are only one cell thick, so substances can pass through', 'They are made of bone'], a: 2, e: 'Thin capillary walls allow oxygen, nutrients and carbon dioxide to be exchanged with tissues.' },
+  { q: 'What do arteries have that helps them cope with the pressure of each heartbeat?', o: ['Thick, elastic walls', 'Many valves', 'Walls one cell thick', 'No walls'], a: 0, e: 'Artery walls are thick and elastic, so they stretch with each beat and spring back.' },
+  { q: 'Where does blood pick up oxygen?', o: ['In the right atrium', 'In the lungs', 'In the aorta', 'In the leg muscles'], a: 1, e: 'In the lung capillaries, oxygen enters the blood and carbon dioxide leaves it.' },
+  { q: 'Which part of blood carries most of the oxygen, using haemoglobin?', o: ['Plasma', 'White blood cells', 'Platelets', 'Red blood cells'], a: 3, e: 'Red blood cells contain haemoglobin, which binds oxygen.' },
+  { q: 'What is the main job of platelets?', o: ['Carrying oxygen', 'Helping blood clot', 'Fighting germs', 'Making blood red'], a: 1, e: 'Platelets gather at a cut and help form a clot to seal it.' },
+  { q: 'What is plasma?', o: ['A kind of white cell', 'The liquid part of blood', 'A heart valve', 'A part of the lungs'], a: 1, e: 'Plasma is the pale-yellow liquid that carries cells and dissolved substances.' },
+  { q: 'Why is the wall of the left ventricle thicker than that of the right ventricle?', o: ['It pumps blood around the whole body, so it needs more force', 'It holds more air', 'It is older', 'It has no valves'], a: 0, e: 'The left ventricle must push blood through the whole body, while the right only sends it to the nearby lungs.' },
+  { q: 'When you exercise, what usually happens?', o: ['Heart rate and breathing rate usually increase', 'The heart stops for a moment', 'Blood flows backwards', 'Breathing slows down'], a: 0, e: 'Active muscles need more oxygen, so the heart and breathing rates usually rise.' },
+  { q: 'In diagrams, why is oxygen-poor blood often drawn blue and oxygen-rich blood red?', o: ['Real blood really changes between blue and red', 'It is a teaching convention to show relatively low and high oxygen', 'Because veins are made of blue material', 'Because blue blood is cold'], a: 1, e: 'Real blood is always some shade of red. The colours in diagrams are an educational code.' },
+  { q: 'Which is part of the systemic circulation?', o: ['Right ventricle → pulmonary arteries → lungs', 'Left ventricle → aorta → body → venae cavae', 'Pulmonary veins → left atrium', 'Lungs → pulmonary veins'], a: 1, e: 'The systemic circulation carries blood from the left ventricle to the body and back to the right atrium.' },
+  { q: 'Which habits help keep the heart healthy?', o: ['Regular activity, enough sleep and a balanced diet', 'Skipping sleep', 'Never moving', 'Only eating sweets'], a: 0, e: 'Being active, sleeping well and eating a balanced diet are healthy habits for the heart.' }
+];
+const Quiz = {
+  qs: [], i: 0, score: 0, wrong: [],
+  open() { this.start(shuffle(QUIZ.map((_, k) => k)).slice(0, 15)); },
+  start(idx) { this.qs = idx; this.i = 0; this.score = 0; this.wrong = []; Modal.open('❓ Heart & Circulation Quiz', '<div id="qHost"></div>', 'quiz'); this.render(); },
+  render() {
+    const host = $('#qHost'); if (!host) return; if (this.i >= this.qs.length) return this.result(host);
+    const q = QUIZ[this.qs[this.i]], opts = shuffle(q.o.map((t, k) => [t, k]));
+    host.innerHTML = `<div class="lh" style="justify-content:space-between"><span class="pill">Question ${this.i + 1} of ${this.qs.length}</span><span class="pill">⭐ Score ${this.score}</span></div><div class="prog" style="margin:8px 0 14px" role="progressbar" aria-valuemin="0" aria-valuemax="${this.qs.length}" aria-valuenow="${this.i}"><i style="width:${this.i / this.qs.length * 100}%"></i></div>
+      <h3 style="font-size:23px;margin:.2em 0 .6em">${q.q}</h3><div>${opts.map(o => `<button class="opt" data-k="${o[1]}">${o[0]}</button>`).join('')}</div><div id="fb" aria-live="polite"></div>`;
+    $$('.opt', host).forEach(bt => bt.onclick = () => {
+      const ok = +bt.dataset.k === q.a; $$('.opt', host).forEach(y => { y.disabled = true; if (+y.dataset.k === q.a) y.classList.add('ok'); }); if (ok) this.score++; else { bt.classList.add('no'); this.wrong.push(this.qs[this.i]); }
+      $('#fb').innerHTML = `<div class="fb ${ok ? 'ok' : 'no'}"><b>${ok ? ['Correct!', 'Well done!', 'Spot on!', 'Brilliant!'][this.i % 4] : ['Nice try!', 'Not quite – keep going!', 'Good effort!'][this.i % 3]}</b> ${q.e} <div style="margin-top:8px"><button class="btn pri" id="qn">${this.i + 1 >= this.qs.length ? 'See my result' : 'Next ▶'}</button></div></div>`; $('#qn').onclick = () => { this.i++; this.render(); }; $('#qn').focus();
+    });
+  },
+  result(host) {
+    const n = this.qs.length, pct = this.score / n, best = Math.max(store.get('best', 0), this.score); store.set('best', best);
+    const msg = pct >= .9 ? ['🏆', 'Heart Hero!'] : pct >= .7 ? ['🌟', 'Great work, Circulation Scientist!'] : pct >= .45 ? ['🫀', 'Good job – you are getting there!'] : ['🌱', 'A good start – every scientist learns by trying. Try again!'];
+    host.innerHTML = `<div style="text-align:center"><div style="font-size:70px">${msg[0]}</div><h3 style="font-size:26px;margin:.1em 0">${msg[1]}</h3><div class="big">${this.score} / ${n}</div><p>Best score on this device: <b>${best}</b></p>
+      <div class="prog" style="height:12px"><i style="width:${pct * 100}%"></i></div>
+      ${this.wrong.length ? `<details class="qa" style="text-align:left"><summary>Review the ones to remember (${this.wrong.length})</summary>${this.wrong.map(k => `<div class="box"><b>${QUIZ[k].q}</b><br>✔ ${QUIZ[k].o[QUIZ[k].a]}<br><small>${QUIZ[k].e}</small></div>`).join('')}</details>` : '<p>Perfect – no mistakes!</p>'}
+      <div class="row" style="justify-content:center"><button class="btn pri" id="qRetry">🔁 Retry same questions</button><button class="btn" id="qAgain">🎲 Play again (new mix)</button><button class="btn" id="qHome">🫀 Back to the heart</button></div></div>`;
+    $('#qRetry').onclick = () => this.start(this.qs.slice()); $('#qAgain').onclick = () => this.open(); $('#qHome').onclick = () => { Modal.close(); UI.go('explore'); };
+  }
+};
+const GLOSS = [
+  ['Heart', 'A muscular pump about the size of your fist that pushes blood around the body.'], ['Atrium (plural: atria)', 'An upper chamber of the heart. It receives blood.'], ['Ventricle', 'A lower chamber of the heart. It pumps blood out.'],
+  ['Right atrium', 'Receives oxygen-poor blood from the body through the venae cavae.'], ['Right ventricle', 'Pumps oxygen-poor blood to the lungs.'], ['Left atrium', 'Receives oxygen-rich blood from the lungs through the pulmonary veins.'], ['Left ventricle', 'Pumps oxygen-rich blood to the body. It has the thickest wall.'],
+  ['Valve', 'A flap-like structure that keeps blood flowing in one direction.'], ['Tricuspid valve', 'Valve with three flaps between the right atrium and right ventricle.'], ['Mitral valve', 'Valve with two flaps between the left atrium and left ventricle.'], ['Pulmonary valve', 'Valve between the right ventricle and the pulmonary artery.'], ['Aortic valve', 'Valve between the left ventricle and the aorta.'],
+  ['Vena cava', 'A very large vein that returns blood from the body to the right atrium. The superior one comes from above the heart and the inferior one from below.'], ['Aorta', 'The largest artery. It carries oxygen-rich blood from the left ventricle to the body.'], ['Pulmonary artery', 'Carries blood from the right ventricle to the lungs (relatively low in oxygen).'], ['Pulmonary vein', 'Carries blood from the lungs to the left atrium (relatively high in oxygen).'],
+  ['Artery', 'A blood vessel that carries blood away from the heart. It has a thick, elastic wall.'], ['Vein', 'A blood vessel that carries blood towards the heart. Many veins have valves.'], ['Capillary', 'A tiny blood vessel with a wall one cell thick, where oxygen, nutrients and wastes are exchanged.'],
+  ['Circulation', 'The movement of blood around the body.'], ['Pulmonary circulation', 'The loop from the heart to the lungs and back to the heart.'], ['Systemic circulation', 'The loop from the heart to the rest of the body and back to the heart.'],
+  ['Oxygen', 'A gas from the air that body cells use to release energy from food.'], ['Carbon dioxide', 'A waste gas made by cells. Blood carries it to the lungs to be breathed out.'], ['Oxygenated / oxygen-rich', 'Blood with relatively high oxygen content. Drawn red in diagrams as a convention.'], ['Deoxygenated / oxygen-poor', 'Blood with relatively low oxygen content. Drawn blue in diagrams as a convention.'],
+  ['Plasma', 'The liquid part of blood.'], ['Red blood cell', 'A disc-shaped cell that carries oxygen using haemoglobin.'], ['Haemoglobin', 'The red protein in red blood cells that binds oxygen.'], ['White blood cell', 'A blood cell that helps defend the body against germs.'], ['Platelet', 'A tiny cell fragment that helps blood clot.'],
+  ['Heartbeat', 'One cycle of the heart squeezing and relaxing.'], ['Heart rate', 'The number of heartbeats in one minute. It varies with age, fitness, activity and other factors.'], ['Pulse', 'The beat you can feel in an artery near the skin, caused by the heart pumping.'], ['Contract', 'When a muscle squeezes and gets shorter.'], ['Cutaway', 'A view that cuts part of an object away so you can see inside.']
+];
+const Glossary = {
+  open() {
+    const b = Modal.open('📖 Glossary', `<div class="ctl"><label for="gq">Search the glossary</label><input id="gq" type="search" placeholder="Type a word…" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.1);color:#fff;font-size:16px"></div><div id="glList" class="cards"></div>`, 'gloss');
+    const draw = q => { $('#glList').innerHTML = GLOSS.filter(g => (g[0] + ' ' + g[1]).toLowerCase().includes(q.toLowerCase())).map(g => `<div class="card"><h4>${g[0]}</h4><p>${g[1]}</p></div>`).join('') || '<p>No matching words.</p>'; };
+    draw(''); $('#gq').oninput = e => draw(e.target.value);
+  }
+};
+
+/* =====================================================================
+   BOOT, MAIN LOOP, CONTROLS
+   ===================================================================== */
+function togglePresent(on) {
+  W.present = on === undefined ? !W.present : on; document.body.classList.toggle('present', W.present); const de = document.documentElement;
+  if (W.present) { W.paused = false; UI.syncPause(); $('#settings').classList.remove('open'); try { de.requestFullscreen && de.requestFullscreen().catch(() => { }); } catch (e) { } toast('Presentation mode: bigger text for the class. Press Esc to exit.'); }
+  else { try { document.fullscreenElement && document.exitFullscreen().catch(() => { }); } catch (e) { } }
+  applyViewOffset();
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && W.present) { W.present = false; document.body.classList.remove('present'); applyViewOffset(); } });
+function resetCamera() { if (CAM.preset) { camGo(CAM.preset); CAM.auto = W.mode === 'title'; const s = Stage.cur; if (s && s.id === 'journey' || W.mode === 'journey') Stage.cur.follow(); } }
+function tick() {
+  requestAnimationFrame(tick);
+  const raw = Math.min(clock.getDelta(), .05), dt = W.paused ? 0 : raw * W.speed;
+  if (document.hidden || W.modalOpen) return;
+  try { T += dt; Stage.update(dt, raw); camUpdate(raw); updateLabels(); bgPts.rotation.y += raw * .01; renderer.render(scene, camera); }
+  catch (e) { if (!tick.err) { tick.err = 1; console.error(e); toast('Something went wrong with the 3D view. Try reloading the page.', null, null, 7000); } }
+  if (!tick.first) { tick.first = 1; setTimeout(() => $('#loader').classList.add('hide'), 250); }
+}
+function boot() {
+  const lowDev = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3;
+  W.gfx = store.get('gfx', lowDev ? 'low' : 'high'); UI.panel = $('#panel');
+  $('#nav').innerHTML = NAV.map(n => `<button class="nb" data-k="${n[0]}" aria-label="${n[2]}"><span class="i" aria-hidden="true">${n[1]}</span>${n[2]}</button>`).join('');
+  $$('.nb').forEach(b => b.onclick = () => UI.go(b.dataset.k));
+  try { initWorld(); buildHeart(); HEART.pk.forEach(m => PICK.push(m)); addExtraLabels(); initStages(); } catch (e) { console.error(e); NO3D.v = true; document.body.classList.add('no3d'); $('#loader').classList.add('hide'); toast('3D graphics are not available on this device. Activities, the quiz and the glossary still work.', null, null, 8000); }
+  PWA.init();
+  $('#startBtn').onclick = () => UI.go('explore'); $('#backBtn').onclick = () => UI.go('title');
+  $('#pauseBtn').onclick = () => { W.paused = !W.paused; UI.syncPause(); }; $('#resetCam').onclick = resetCamera;
+  $('#zoomIn').onclick = () => zoomBy(.8); $('#zoomOut').onclick = () => zoomBy(1.25);
+  $('#lblBtn').onclick = e => { W.labels = !W.labels; e.currentTarget.classList.toggle('on', !W.labels); toast(W.labels ? 'Labels shown' : 'Labels hidden', null, null, 1400); };
+  $('#presBtn').onclick = () => togglePresent(); $('#exitP').onclick = () => togglePresent(false); $('#setBtn').onclick = () => $('#settings').classList.toggle('open');
+  $('#spd').oninput = e => { W.speed = +e.target.value; $('#spdv').textContent = W.speed.toFixed(1) + '×'; };
+  $$('#gfxSeg button').forEach(b => { b.classList.toggle('on', b.dataset.g === W.gfx); b.onclick = () => { $$('#gfxSeg button').forEach(x => x.classList.toggle('on', x === b)); W.gfx = b.dataset.g; store.set('gfx', W.gfx); resize(); toast(W.gfx === 'low' ? 'Reduced graphics on: faster on older devices. Restart a stage to apply fully.' : 'High graphics on.', null, null, 2200); }; });
+  document.addEventListener('pointerdown', e => { const s = $('#settings'); if (s.classList.contains('open') && !s.contains(e.target) && e.target.id !== 'setBtn') s.classList.remove('open'); });
+  document.addEventListener('keydown', e => {
+    const tg = e.target.tagName; if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA' || W.modalOpen) return;
+    if (e.key === ' ' && tg !== 'BUTTON') { e.preventDefault(); $('#pauseBtn').click(); }
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && clock) clock.getDelta(); });
+  UI.syncPause(); $('#top').style.visibility = 'hidden'; document.body.classList.add('is-title');
+  if (!NO3D.v) { UI.go('title'); tick(); } else { $('#title').classList.remove('gone'); }
+}
+window.addEventListener('error', e => { if (e && e.message && !/ResizeObserver/.test(e.message)) console.error('App error:', e.message); });
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+
+</script>
+</body>
+</html>
